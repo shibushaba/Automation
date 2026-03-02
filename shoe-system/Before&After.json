@@ -1,0 +1,270 @@
+{
+  "name": "Before&After",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Resole Test",
+        "formFields": {
+          "values": [
+            {
+              "fieldName": "Before",
+              "fieldLabel": "upload image",
+              "fieldType": "file",
+              "multipleFiles": false,
+              "requiredField": true
+            },
+            {
+              "fieldName": "After",
+              "fieldLabel": "upload image",
+              "fieldType": "file",
+              "multipleFiles": false,
+              "requiredField": true
+            },
+            {
+              "fieldName": "Email",
+              "fieldLabel": "mail",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldName": "Amount",
+              "fieldLabel": "amount",
+              "fieldType": "number",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "d5539bd2-a1be-486c-93a7-460927b70b31",
+      "name": "On form submission",
+      "webhookId": "70110176-e8ff-406f-a97a-56d4d46a0d9c"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/generate",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "before",
+              "inputDataFieldName": "Before"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "after",
+              "inputDataFieldName": "After"
+            },
+            {
+              "name": "mail",
+              "value": "={{ $json.Email }}"
+            },
+            {
+              "name": "amount",
+              "value": "={{$json.Amount}}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "final_image"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        176,
+        16
+      ],
+      "id": "1eea7f56-4815-47c3-8a94-3c4beb8a0728",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.Email }}",
+        "subject": "Your Shoe Service is Completed – Resole",
+        "message": "=<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\" />\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n\n<style>\n  body {\n    margin: 0;\n    padding: 0;\n    background-color: #0e0f13;\n    font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Inter, sans-serif;\n    color: #e6e6e6;\n  }\n\n  .container {\n    max-width: 520px;\n    margin: 40px auto;\n    padding: 32px;\n    background: linear-gradient(180deg, #151721 0%, #0e0f13 100%);\n    border-radius: 16px;\n    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);\n    animation: fadeUp 0.8s ease-out;\n  }\n\n  @keyframes fadeUp {\n    from {\n      opacity: 0;\n      transform: translateY(12px);\n    }\n    to {\n      opacity: 1;\n      transform: translateY(0);\n    }\n  }\n\n  .icon {\n    font-size: 28px;\n    margin-bottom: 16px;\n    opacity: 0.9;\n  }\n\n  h1 {\n    font-size: 20px;\n    font-weight: 600;\n    margin: 0 0 12px;\n    letter-spacing: 0.3px;\n  }\n\n  p {\n    font-size: 14.5px;\n    line-height: 1.6;\n    margin: 0 0 14px;\n    color: #cfcfd6;\n  }\n\n  .amount {\n    margin: 20px 0;\n    padding: 14px 18px;\n    background-color: rgba(255, 255, 255, 0.04);\n    border-radius: 12px;\n    font-size: 15px;\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n  }\n\n  .amount span {\n    color: #9fa2ff;\n    font-weight: 600;\n    letter-spacing: 0.3px;\n  }\n\n  .payment-button {\n    margin-top: 22px;\n    width: 100%;\n    padding: 14px 18px;\n    background: linear-gradient(135deg, #6f75ff, #9fa2ff);\n    border: none;\n    border-radius: 12px;\n    font-size: 15px;\n    font-weight: 600;\n    color: #0e0f13;\n    cursor: pointer;\n    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;\n  }\n\n  .payment-button:hover {\n    transform: translateY(-1px);\n    box-shadow: 0 10px 20px rgba(159, 162, 255, 0.35);\n    opacity: 0.95;\n  }\n\n  .payment-button:active {\n    transform: translateY(0);\n    box-shadow: 0 6px 12px rgba(159, 162, 255, 0.25);\n  }\n\n  .footer {\n    margin-top: 28px;\n    padding-top: 18px;\n    border-top: 1px solid rgba(255, 255, 255, 0.08);\n    font-size: 13px;\n    color: #9a9aa3;\n    text-align: center;\n  }\n\n  .brand {\n    font-weight: 600;\n    color: #ffffff;\n  }\n</style>\n</head>\n\n<body>\n  <div class=\"container\">\n    <div class=\"icon\">👞</div>\n\n    <h1>Your shoe service is complete</h1>\n\n    <p>\n      We’re happy to let you know that your footwear has been professionally serviced\n      and is ready.\n    </p>\n\n    <div class=\"amount\">\n      <div>Amount payable</div>\n      <span>₹{{ $json.Amount }}</span>\n    </div>\n\n    <button class=\"payment-button\">\n      Complete Payment\n    </button>\n\n    <p style=\"margin-top: 18px;\">\n      Your <strong>before &amp; after</strong> results are attached for your review.\n    </p>\n\n    <div class=\"footer\">\n      Thank you for choosing <span class=\"brand\">Resole</span><br />\n      We’d love to hear your feedback\n    </div>\n  </div>\n</body>\n</html>\n",
+        "options": {
+          "appendAttribution": false,
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {
+                "property": "final_image"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        384,
+        16
+      ],
+      "id": "2ea178cf-0255-478d-bb0e-25d4345c67f8",
+      "name": "Send a message",
+      "webhookId": "10960020-d5e0-47ed-a3cb-d42f5f93cc68",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "exqFuECeqxCWfubd",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1vlmlCEMU1RT2qrGqT4mzaqMnPn8uJDS5XBoyyn_-QVY",
+          "mode": "list",
+          "cachedResultName": "Resole Test",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vlmlCEMU1RT2qrGqT4mzaqMnPn8uJDS5XBoyyn_-QVY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 563220808,
+          "mode": "list",
+          "cachedResultName": "Form responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vlmlCEMU1RT2qrGqT4mzaqMnPn8uJDS5XBoyyn_-QVY/edit#gid=563220808"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{$now}}",
+            "Before": "={{ $('On form submission').item.json.Before }}",
+            "After": "={{ $('On form submission').item.json.After }}",
+            "Email": "={{ $('On form submission').item.json.Email }}",
+            "  Amount  ": "={{ $('On form submission').item.json.Amount }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Before",
+              "displayName": "Before",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "After",
+              "displayName": "After",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "  Amount  ",
+              "displayName": "  Amount  ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        592,
+        16
+      ],
+      "id": "aaec6d88-e702-4011-96d3-5de1cfc8445b",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "QUAeKxQHxoSLdM4Z",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "8721ab7d-ff74-4e4b-b718-67d8dca5bd70",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fe9c4a34b46a73a2b7665dc2789cf79e253a8d341c798ea67f60c08e26166775"
+  },
+  "id": "n9EUU8qHetiAOAQL",
+  "tags": []
+}

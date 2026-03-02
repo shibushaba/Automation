@@ -1,0 +1,903 @@
+{
+  "name": "Chat-Bot WorkFlow",
+  "nodes": [
+    {
+      "parameters": {
+        "multipleMethods": true,
+        "path": "c62c59d4-5f54-4d92-a587-bbc794113da2",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -592,
+        -112
+      ],
+      "id": "4840c956-d861-4415-bfb3-e92fdf038c22",
+      "name": "Webhook",
+      "webhookId": "c62c59d4-5f54-4d92-a587-bbc794113da2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.aiInput}}",
+        "options": {
+          "systemMessage": "=You are the Instagram DM assistant for Automa Ponix (AI automation agency).\n\nTool:\nKnowledge tool (official info only).\n\nSESSION ID = {{ $('Webhook').item.json.body.entry[0].messaging[0].sender.id }}\n\nStyle:\nVery short. 1–2 lines. Spaced.\nNo fluff. No markdown.\nMax one relevant emoji.\n\nRules:\nAnswer questions first.\nDo not invent info.\nIf asked about the website or anything on it, reply only with:\"automa-ponix.vercel.app\" No extra page link.\nUse tool only when needed.\nOne simple question at a time.\nClose within 5 messages. Thank politely.\n\nSession:\nIf contact already collected for this SESSION ID, never ask again.\nAsk contact only once, after clear intent, never before message 4.\n\nLead Flow:\n\nIf user wants to proceed, ask:\n“Would you like our team to reach out?”\n\nIf yes, send:\n\nPlease share:\n\nName\nEmail\nPhone\nRequirement\n\nUsers may reply in any format.\nThey may not include labels.\n\nYou must intelligently extract:\n\n• First valid email → EMAIL\n• First valid phone number → PHONE\n• First non-email text line → NAME\n• Remaining text → REQUIRMENT\n\nIf something is missing, ask only for the missing field.\n\nThen show summary (not JSON):\n\nName:\nEmail:\nPhone:\nRequirement:\n\nAsk: “Is this correct?”\n\nAfter confirmation, reply ONLY with raw JSON:\n\n{\n\"store_lead\": true,\n\"NAME\": \"\",\n\"EMAIL\": \"\",\n\"PHONE\": \"\",\n\"REQUIRMENT\": \"\",\n\"SESSION_ID\": \"{{ $('Webhook').item.json.body.entry[0].messaging[0].sender.id }}\"\n}\n\nNever output JSON otherwise.\nReturn raw JSON object only\n\nNever output JSON otherwise.\n\nPricing:\nNever mention numbers. Say it depends on needs.\n\nTone:\nWarm. Minimal. Confident. Friendly."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        80,
+        128
+      ],
+      "id": "eebde3e7-17b8-4781-aed4-a8f745cc01d8",
+      "name": "AI Agent",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.instagram.com/v25.0/{{ $('Webhook').item.json.body.entry[0].messaging[0].recipient.id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer IGAAcUbxmsrrZABZAGJRZAUwwX3hUX1FINlloT1RUT1AwYWNtYkNFOVdpT2ZAndFJfdThfLWlOdWxxM21tOXFhRzc2bkZAzNDFfYXFpNTZAfYjN6aFNxUjZAvSkVyZAWpwOHM4a25JZAzNGZA1pjU3RqWEJhZAnBLaVBaM093Sy1KNDlHSWRrWQZDZD"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n messaging_type: \"RESPONSE\",\n recipient: {\nid: $('Webhook').item.json.body.entry[0].messaging[0].sender.id\n },\nmessage: {\ntext: $json.output\n}\n} }}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        608,
+        208
+      ],
+      "id": "90852c1d-51ea-4578-a6bf-01a099c58a59",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.query['hub.challenge'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -144,
+        -192
+      ],
+      "id": "8f1785c5-e85b-4149-8ea2-18fdb8dd5871",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "736e4e9e-ce9e-473d-b971-d2394ec802cb",
+              "leftValue": "={{ $json.query['hub.mode'] }}",
+              "rightValue": "subscribe",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "d63f12e5-4bec-46c2-a8cd-d6755551b702",
+              "leftValue": "={{ $json.query['hub.verify_token'] }}",
+              "rightValue": "automaponix",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -352,
+        -176
+      ],
+      "id": "79e34281-0999-4a91-99c3-f6bac014a427",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 3,
+        "output": "={{\n  $json.body.entry?.[0]?.changes?.[0]?.field === \"comments\"\n    ? 0\n    : (\n        $json.body.entry?.[0]?.messaging?.[0]?.message?.text &&\n        !$json.body.entry?.[0]?.messaging?.[0]?.message?.is_echo\n      )\n      ? 1\n      : 2\n}}"
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -352,
+        32
+      ],
+      "id": "45f39b2d-1dfa-4e96-9c4c-374221e97f47",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.aiInput}}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        80,
+        -64
+      ],
+      "id": "e23b3bc7-bfb8-4e68-b9a4-dd884da4af69",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.instagram.com/v25.0/{{ $('Webhook').item.json.body.entry[0].changes[0].value.from.id }}/replies",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer IGAAcUbxmsrrZABZAGJRZAUwwX3hUX1FINlloT1RUT1AwYWNtYkNFOVdpT2ZAndFJfdThfLWlOdWxxM21tOXFhRzc2bkZAzNDFfYXFpNTZAfYjN6aFNxUjZAvSkVyZAWpwOHM4a25JZAzNGZA1pjU3RqWEJhZAnBLaVBaM093Sy1KNDlHSWRrWQZDZD"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        368,
+        -64
+      ],
+      "id": "b7c2c31b-2f0b-4bb1-bb02-9805919c0a25",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  type: \"COMMENT\",\n  aiInput: $json.body.entry[0].changes[0].value.text,\n  commentId: $json.body.entry[0].changes[0].value.id\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -112,
+        -64
+      ],
+      "id": "034fb76c-02c5-40da-8a5b-41f5ac846591",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"type\": \"DM\",\n  \"aiInput\": \"{{$json.body.entry[0].messaging[0].message.text}}\",\n  \"senderId\": \"{{$json.body.entry[0].messaging[0].sender.id}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -112,
+        128
+      ],
+      "id": "930d5d91-2f3c-443a-83b1-e1e6486c16de",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {
+          "maxTokensToSample": 200,
+          "temperature": 0.5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        80,
+        288
+      ],
+      "id": "ff56b92c-5135-4bdd-b6e0-7176716f714c",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "ALv4HXmDxjkFtooy",
+          "name": "Groq account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1fk_VwBZPJRAVmJPAs2pQj0ysNaqD5heA",
+          "mode": "list",
+          "cachedResultName": "Automaponix-Base.pdf",
+          "cachedResultUrl": "https://drive.google.com/file/d/1fk_VwBZPJRAVmJPAs2pQj0ysNaqD5heA/view?usp=drivesdk"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -80,
+        416
+      ],
+      "id": "f90b4045-1ffc-4ea9-b2b0-90fa73f50f32",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "KIPGOIWtOslA8sNJ",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-001"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        64,
+        576
+      ],
+      "id": "c81fac86-3742-493d-bf56-cbcd8de26d3b",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "K3LvDXo4dAH92s5c",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "loader": "pdfLoader",
+        "textSplittingMode": "custom",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        160,
+        576
+      ],
+      "id": "d931267b-1039-4c3c-a255-604a19ffe2cb",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkOverlap": 100,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        368,
+        704
+      ],
+      "id": "878bbf2f-935c-48a1-b7ea-8e9223fc8cbb",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "automaponix-kb",
+          "mode": "list",
+          "cachedResultName": "automaponix-kb"
+        },
+        "embeddingBatchSize": 20,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        64,
+        416
+      ],
+      "id": "9b44d729-0bd2-400e-a107-36abb01cc344",
+      "name": "Pinecone Vector Store1",
+      "credentials": {
+        "pineconeApi": {
+          "id": "cxfh5i6Yp6b4RizC",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Use this tool to retrieve official Automa Ponix company information including services, automation solutions, FAQs, and policies. Use it when replying.",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "automaponix-kb",
+          "mode": "list",
+          "cachedResultName": "automaponix-kb"
+        },
+        "topK": 3,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        272,
+        288
+      ],
+      "id": "28bf992a-0c80-4f32-90f4-69a470061cd0",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "cxfh5i6Yp6b4RizC",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook').item.json.body.entry[0].messaging[0].sender.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        176,
+        288
+      ],
+      "id": "c4029abe-3cab-4c17-9688-312d76d82d56",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6859802b-51a7-4e53-941d-87597310590c",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "=\"store_lead\": true",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        416,
+        128
+      ],
+      "id": "cba474c7-078a-4203-b9e9-842b2b1a6e5c",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "dae969df-0b77-48aa-ac17-e79d45c686c9",
+              "name": "NAME",
+              "value": "={{ JSON.parse($json.output).NAME }}",
+              "type": "string"
+            },
+            {
+              "id": "dd9a822a-67d8-4f1b-ab30-858bfd9128ff",
+              "name": "EMAIL",
+              "value": "={{ JSON.parse($json.output).EMAIL }}",
+              "type": "string"
+            },
+            {
+              "id": "f0c802c4-32ef-4ab5-bcc9-92c4a13aa2c7",
+              "name": "PHONE",
+              "value": "={{ JSON.parse($json.output).PHONE }}",
+              "type": "string"
+            },
+            {
+              "id": "08960112-a04f-40da-9d68-1fa62856dc74",
+              "name": "REQUIREMENT",
+              "value": "={{ JSON.parse($json.output).REQUIRMENT }}",
+              "type": "string"
+            },
+            {
+              "id": "46689995-72fe-46af-9f58-77cac344a3c9",
+              "name": "SESSION ID",
+              "value": "={{ JSON.parse($json.output).SESSION_ID }}",
+              "type": "string"
+            },
+            {
+              "id": "f04cb4e4-4369-4bcb-9954-0d54647dce56",
+              "name": "DATE",
+              "value": "={{ $now }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        608,
+        48
+      ],
+      "id": "e5aeb820-17af-4ffe-ba9e-9e4f60d145d7",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.instagram.com/v25.0/{{ $('Webhook').item.json.body.entry[0].messaging[0].recipient.id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer IGAAcUbxmsrrZABZAGJRZAUwwX3hUX1FINlloT1RUT1AwYWNtYkNFOVdpT2ZAndFJfdThfLWlOdWxxM21tOXFhRzc2bkZAzNDFfYXFpNTZAfYjN6aFNxUjZAvSkVyZAWpwOHM4a25JZAzNGZA1pjU3RqWEJhZAnBLaVBaM093Sy1KNDlHSWRrWQZDZD"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n messaging_type: \"RESPONSE\",\n recipient: {\nid: $('Webhook').item.json.body.entry[0].messaging[0].sender.id\n },\nmessage: {\ntext: $json.confirmationMessage\n}\n} }}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1104,
+        48
+      ],
+      "id": "9a5f7359-480e-4e35-8068-6c11b63241c6",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fce76151-9ba1-4c3c-ae90-8a84484ff6d0",
+              "name": "confirmationMessage",
+              "value": "Perfect. Our team will reach out shortly. Thank you.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        944,
+        48
+      ],
+      "id": "a4aee8a0-168c-491b-915b-d9ef86cbc061",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1uw8HiXeJBalLRwpkfKeaizAo6kTwem45Cqqf5yBe0n0",
+          "mode": "list",
+          "cachedResultName": "Automaponix-Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uw8HiXeJBalLRwpkfKeaizAo6kTwem45Cqqf5yBe0n0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uw8HiXeJBalLRwpkfKeaizAo6kTwem45Cqqf5yBe0n0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "NAME": "={{ $json.NAME }}",
+            "DATE": "={{ $json.DATE }}",
+            "PHONE": "={{ $json.PHONE }}",
+            "REQUIRMENT": "={{ $json.REQUIREMENT }}",
+            "EMAIL": "={{ $json.EMAIL }}",
+            "SESSION ID": "={{ $json[\"SESSION ID\"] }}"
+          },
+          "matchingColumns": [
+            "SESSION ID"
+          ],
+          "schema": [
+            {
+              "id": "NAME",
+              "displayName": "NAME",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "DATE",
+              "displayName": "DATE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "PHONE",
+              "displayName": "PHONE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "EMAIL",
+              "displayName": "EMAIL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "REQUIRMENT",
+              "displayName": "REQUIRMENT",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SESSION ID",
+              "displayName": "SESSION ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        784,
+        48
+      ],
+      "id": "a72fa0fb-8913-4d72-b589-e0f3e3cc2953",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "khVbXcM3qDxkgE8T",
+          "name": "Unnamed credential"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        []
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        []
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "3141e0e5-0487-4146-afab-523e98f76a1b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e54605270bc866601c0efd751ae82b4c36f4c1f935c7edb325f3a783b55a7687"
+  },
+  "id": "n2Lara69evlH8y4x",
+  "tags": []
+}
