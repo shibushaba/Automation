@@ -36,10 +36,10 @@
     },
     {
       "parameters": {
-        "jsCode": "let memoryFlag = 'No contact details shared yet.';\n\nconst inputData = $input.all();\nif (inputData.length > 0 && inputData[0].json && inputData[0].json.NAME) {\n  memoryFlag = 'User already shared contact details earlier. Do not ask for them again. Name: ' + inputData[0].json.NAME;\n}\n\n// Ensure the mode is explicitly set to what we expect, though default is runOnceForAllItems.\n// Format Memory node should output an array of 1 item\n\nreturn {\n  json: {\n    aiInput: $('Edit Fields8').first().json.aiInput,\n    senderId: $('Edit Fields8').first().json.senderId,\n    memoryContext: memoryFlag\n  }\n};"
+        "jsCode": "const dbItems = $input.all();\nlet name = 'missing';\nlet email = 'missing';\nlet phone = 'missing';\nlet requirement = 'missing';\nlet aiInput = '';\nlet senderId = '';\n\nif (dbItems.length > 0 && dbItems[0].json) {\n  const data = dbItems[0].json;\n  name = data.NAME || 'missing';\n  email = data.EMAIL || 'missing';\n  phone = data.PHONE || 'missing';\n  requirement = data.REQUIRMENT || data.REQUIREMENT || 'missing';\n  aiInput = data.aiInput || '';\n  senderId = data.senderId || '';\n}\n\nconst memoryFlag = `Known lead info:\nName: ${name}\nEmail: ${email}\nPhone: ${phone}\nRequirement: ${requirement}`;\n\nif (!aiInput || !senderId) {\n    const webhookNode = $items().find(i => i.json && i.json.body && i.json.body.entry);\n    if (webhookNode) {\n        const webhookData = webhookNode.json.body.entry[0];\n        if (webhookData.messaging && webhookData.messaging.length > 0) {\n            aiInput = webhookData.messaging[0].message.text;\n            senderId = webhookData.messaging[0].sender.id;\n        } else if (webhookData.changes && webhookData.changes.length > 0) {\n            aiInput = webhookData.changes[0].value.text;\n            senderId = (webhookData.changes[0].value.from ? webhookData.changes[0].value.from.id : webhookData.changes[0].value.id) || '';\n        }\n    }\n}\n\nreturn {\n  json: {\n    aiInput: aiInput || '',\n    senderId: senderId || '',\n    memoryContext: memoryFlag\n  }\n};"
       },
       "id": "97615266-58df-49bf-b276-8081b10bdfa0",
-      "name": "Format Memory",
+      "name": "Load Memory Context",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -221,7 +221,7 @@
         "promptType": "define",
         "text": "={{ $json.aiInput }}",
         "options": {
-          "systemMessage": "=Name: Maya\n\nRole: Instagram DM assistant for Automa Ponix (AI automation agency).\nGoal: answer questions, guide conversation, capture qualified leads.\n\nTool\nKnowledge tool (official agency info only). Use only when needed. Never invent info.\n\nSESSION_ID = {{ $('Webhook').item.json.body.entry[0].messaging[0].sender.id }}\n\nStyle\nReplies must be 1–2 short lines.\nClean spacing.\nNo markdown.\nNo bold.\nNever use ** or formatting symbols.\nMaximum 1 emoji if needed.\nUse lists when needed.\n\nTone\nConfident, friendly, lightly witty.\nHumor about automation only.\n\nExample tone\nAutomation loves doing boring work so humans don’t have to 😄\n\nRules\n• Always answer the user’s question first\n• Ask only one simple question at a time\n• Close conversation within 5 messages and thank politely\n• If asked about the agency use Knowledge tool\n\nMemory:\n{{ $json.memoryContext }}\n\nLead Flow\n\nIf the user wants to proceed ask:\n\nWould you like our team to reach out?\n\nIf yes send:\n\nPlease share:\n\nName\nEmail\nPhone\nRequirement\n\nContact Extraction\n\nUser messages may be messy or unlabeled.\n\nExtract:\n\nFirst valid email → EMAIL\nFirst valid phone number → PHONE\nFirst non-email text line → NAME\nRemaining text → REQUIREMENT\n\nImportant rules\n\n• Never invent values\n• Never write Unknown\n• Never guess missing data\n\nIf any field is missing ask ONLY for that field.\n\nExample\nIf name missing:\n\nCould you share your name?\n\nOnly after ALL fields exist show summary:\n\nName:\nEmail:\nPhone:\nRequirement:\n\nThen ask:\n\nIs this correct?\n\nFinal Response\n\nAfter confirmation return ONLY this JSON:\n\n{\n\"store_lead\": true,\n\"NAME\": \"\",\n\"EMAIL\": \"\",\n\"PHONE\": \"\",\n\"REQUIRMENT\": \"\",\n\"SESSION_ID\": \"{{ $('Webhook').item.json.body.entry[0].messaging[0].sender.id }}\"\n}\n\nNever output JSON otherwise.\n\nReturn only the raw JSON object.\n\nPricing\nNever mention numbers.\nSay pricing depends on the business needs and automation scope.\n\nPersonality\n\nCalm, smart, efficient.\nUses small clever automation jokes.\n\nNever joke about the customer."
+          "systemMessage": "=Name: Maya\n\nRole: Instagram DM assistant for Automa Ponix (AI automation agency).\nGoal: answer questions, guide conversation, capture qualified leads.\n\nTool\nKnowledge tool (official agency info only). Use only when needed.\n\nSESSION_ID = {{ $json.senderId || 'unknown' }}\n\nStyle\nReplies must be 1–2 short lines.\nClean spacing. No markdown. No bold.\nNever use ** or formatting symbols.\nMaximum 1 emoji if needed.\nUse lists when needed.\n\nTone\nConfident, friendly, lightly witty.\n\nRules\n• Always answer the user’s question first\n• Ask only one simple question at a time\n• Close conversation within 5 messages and thank politely\n• If asked about the agency use Knowledge tool\n\n{{ $json.memoryContext || '' }}\n\nLead Flow\nIf the user wants to proceed ask: Would you like our team to reach out?\nIf yes send: Please share: Name, Email, Phone, Requirement\n\nContact Extraction\nIf any field is missing ask ONLY for that field.\n\nFinal Response\nAfter confirmation return ONLY this JSON:\n{\n\"store_lead\": true,\n\"NAME\": \"\",\n\"EMAIL\": \"\",\n\"PHONE\": \"\",\n\"REQUIRMENT\": \"\",\n\"SESSION_ID\": \"{{ $json.senderId || 'unknown' }}\"\n}\nNever output JSON otherwise."
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -249,7 +249,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ {\n messaging_type: \"RESPONSE\",\n recipient: {\nid: $('Webhook').item.json.body.entry[0].messaging[0].sender.id\n },\nmessage: {\ntext: $json.output\n}\n} }}",
+        "jsonBody": "={{ {\n messaging_type: \"RESPONSE\",\n recipient: {\nid: $('Webhook').item.json.body.entry[0].messaging[0].sender.id\n },\nmessage: {\ntext: $json.output \n}\n} }}",
         "options": {
           "redirect": {
             "redirect": {}
@@ -259,7 +259,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        3488,
+        3900,
         2448
       ],
       "id": "7b1ab44e-8c8d-4e7c-b7c2-73e1d46a1334",
@@ -341,7 +341,9 @@
       "parameters": {
         "promptType": "define",
         "text": "={{$json.aiInput}}",
-        "options": {}
+        "options": {
+          "systemMessage": "=Name: Maya\n\nRole: Instagram DM assistant for Automa Ponix (AI automation agency).\nGoal: answer questions, guide conversation, capture qualified leads.\n\nTool\nKnowledge tool (official agency info only). Use only when needed.\n\nSESSION_ID = {{ $json.senderId || 'unknown' }}\n\nStyle\nReplies must be 1–2 short lines.\nClean spacing. No markdown. No bold.\nNever use ** or formatting symbols.\nMaximum 1 emoji if needed.\nUse lists when needed.\n\nTone\nConfident, friendly, lightly witty.\n\nRules\n• Always answer the user’s question first\n• Ask only one simple question at a time\n• Close conversation within 5 messages and thank politely\n• If asked about the agency use Knowledge tool\n\n{{ $json.memoryContext || '' }}\n\nLead Flow\nIf the user wants to proceed ask: Would you like our team to reach out?\nIf yes send: Please share: Name, Email, Phone, Requirement\n\nContact Extraction\nIf any field is missing ask ONLY for that field.\n\nFinal Response\nAfter confirmation return ONLY this JSON:\n{\n\"store_lead\": true,\n\"NAME\": \"\",\n\"EMAIL\": \"\",\n\"PHONE\": \"\",\n\"REQUIRMENT\": \"\",\n\"SESSION_ID\": \"{{ $json.senderId || 'unknown' }}\"\n}\nNever output JSON otherwise."
+        }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
@@ -598,7 +600,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        3280,
+        3460,
         2336
       ],
       "id": "9abd829e-291a-4108-8520-2c2b57dae2d5",
@@ -1084,6 +1086,34 @@
           "name": "Google Sheets account"
         }
       }
+    },
+    {
+      "parameters": {
+        "sessionId": "={{ $json.senderId || $json.commentId || $json['SESSION_ID'] || 'default' }}",
+        "contextWindowLength": 5
+      },
+      "id": "uuid-mem-kderzvomm",
+      "name": "Window Buffer Memory 1",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.2,
+      "position": [
+        2992,
+        2536
+      ]
+    },
+    {
+      "parameters": {
+        "sessionId": "={{ $json.senderId || $json.commentId || $json['SESSION_ID'] || 'default' }}",
+        "contextWindowLength": 5
+      },
+      "id": "uuid-mem-ng52hzg67",
+      "name": "Window Buffer Memory 2",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.2,
+      "position": [
+        2816,
+        2264
+      ]
     }
   ],
   "connections": {
@@ -1091,18 +1121,7 @@
       "main": [
         [
           {
-            "node": "Format Memory",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Format Memory": {
-      "main": [
-        [
-          {
-            "node": "AI Agent",
+            "node": "Load Memory Context",
             "type": "main",
             "index": 0
           }
@@ -1410,6 +1429,39 @@
           {
             "node": "Mark Follow-up Sent2",
             "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Memory Context": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory 1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory 2": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "ai_memory",
             "index": 0
           }
         ]
