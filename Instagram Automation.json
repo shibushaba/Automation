@@ -2,6 +2,53 @@
   "nodes": [
     {
       "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1uw8HiXeJBalLRwpkfKeaizAo6kTwem45Cqqf5yBe0n0",
+          "mode": "list",
+          "cachedResultName": "Automaponix-Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uw8HiXeJBalLRwpkfKeaizAo6kTwem45Cqqf5yBe0n0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uw8HiXeJBalLRwpkfKeaizAo6kTwem45Cqqf5yBe0n0/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "3daff6eb-c379-4275-987e-930e251c5ec0",
+      "name": "Check DB",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2672,
+        2336
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2dvuvMpwQe7b0sGm",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let memoryFlag = 'No contact details shared yet.';\n\nconst inputData = $input.all();\nif (inputData.length > 0 && inputData[0].json && inputData[0].json.NAME) {\n  memoryFlag = 'User already shared contact details earlier. Do not ask for them again. Name: ' + inputData[0].json.NAME;\n}\n\n// Ensure the mode is explicitly set to what we expect, though default is runOnceForAllItems.\n// Format Memory node should output an array of 1 item\n\nreturn {\n  json: {\n    aiInput: $('Edit Fields8').first().json.aiInput,\n    senderId: $('Edit Fields8').first().json.senderId,\n    memoryContext: memoryFlag\n  }\n};"
+      },
+      "id": "97615266-58df-49bf-b276-8081b10bdfa0",
+      "name": "Format Memory",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2832,
+        2336
+      ]
+    },
+    {
+      "parameters": {
         "operation": "appendOrUpdate",
         "documentId": {
           "__rl": true,
@@ -20,8 +67,8 @@
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "SENDER_ID": "={{ $('Webhook1').item.json.body.entry[0].messaging[0].sender.id }}",
-            "PAGE_ID": "={{ $('Webhook1').item.json.body.entry[0].messaging[0].recipient.id }}",
+            "SENDER_ID": "={{ $('Webhook').item.json.body.entry[0].messaging[0].sender.id }}",
+            "PAGE_ID": "={{ $('Webhook').item.json.body.entry[0].messaging[0].recipient.id }}",
             "TIMESTAMP": "={{ $now.toISO() }}",
             "FOLLOW_UP_SENT": "false"
           },
@@ -74,11 +121,11 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        2880,
-        944
+        3648,
+        2448
       ],
-      "id": "91eda18c-c2ec-4b65-801a-0cfc62dc2420",
-      "name": "Log to PendingFollowUps",
+      "id": "e8dce530-ee4d-474e-b02a-4271938ea989",
+      "name": "Log to PendingFollowUps1",
       "credentials": {
         "googleSheetsOAuth2Api": {
           "id": "2dvuvMpwQe7b0sGm",
@@ -140,11 +187,11 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        3072,
-        752
+        3840,
+        2256
       ],
-      "id": "fbf7cb6e-3f32-4b5f-a1be-c393fdc08f8a",
-      "name": "Mark CONVERTED",
+      "id": "d5134a8e-989b-4db3-99f3-939f0ea7d970",
+      "name": "Mark CONVERTED1",
       "credentials": {
         "googleSheetsOAuth2Api": {
           "id": "2dvuvMpwQe7b0sGm",
@@ -162,35 +209,35 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        1376,
-        592
+        2144,
+        2096
       ],
-      "id": "7fd75c0f-ef61-428a-a6c1-8c60a4faade7",
-      "name": "Webhook1",
+      "id": "ade26bcf-2b25-4a6f-aabd-cde1b135d64a",
+      "name": "Webhook",
       "webhookId": "c62c59d4-5f54-4d92-a587-bbc794113da2"
     },
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{$json.aiInput}}",
+        "text": "={{ $json.aiInput }}",
         "options": {
-          "systemMessage": "=Your Name is Maya the Instagram DM assistant for Automa Ponix(AI automation agency).\n\nTool:\nKnowledge tool (official info only).\n\nSESSION ID = {{ $('Webhook1').item.json.body.entry[0].messaging[0].sender.id }}\n\nStyle: (must follow this)\nVery short. 1–2 lines. Spaced. clean.\nNo fluff. No markdown and asterisk. No bolding. use list when needed. Max one emoji.\n\nRules:\nAnswer questions first.\nDo not invent info.\nIf asked about the agency use tool.\nUse tool only when needed.\nOne simple question at a time.\nClose within 5 messages. Thank politely.\n\nSession:\nIf contact already collected for this SESSION ID, never ask again.\nAsk contact only once, after clear intent, never before message 4.\n\nLead Flow:\n\nIf user wants to proceed, ask:\n“Would you like our team to reach out?”\n\nIf yes, send:\n\nPlease share:\n\nName\nEmail\nPhone\nRequirement\n\nUsers may reply in any format.\nThey may not include labels.\n\nYou must intelligently extract:\n\n• First valid email → EMAIL\n• First valid phone number → PHONE\n• First non-email text line → NAME\n• Remaining text → REQUIRMENT\n\nIf something is missing, ask only for the missing field.\n\nThen show summary (not JSON):\n\nName:\nEmail:\nPhone:\nRequirement:\n\nAsk: “Is this correct?”\n\nAfter confirmation, reply ONLY with raw JSON:\n\n{\n\"store_lead\": true,\n\"NAME\": \"\",\n\"EMAIL\": \"\",\n\"PHONE\": \"\",\n\"REQUIRMENT\": \"\",\n\"SESSION_ID\": \"{{ $('Webhook1').item.json.body.entry[0].messaging[0].sender.id }}\"\n}\n\nNever output JSON otherwise.\nReturn raw JSON object only\n\nNever output JSON otherwise.\n\nPricing:\nNever mention numbers. Say it depends on needs.\n\nTone:\nWarm. Minimal. Confident. Friendly."
+          "systemMessage": "=Name: Maya\n\nRole: Instagram DM assistant for Automa Ponix (AI automation agency).\nGoal: answer questions, guide conversation, capture qualified leads.\n\nTool\nKnowledge tool (official agency info only). Use only when needed. Never invent info.\n\nSESSION_ID = {{ $('Webhook').item.json.body.entry[0].messaging[0].sender.id }}\n\nStyle\nReplies must be 1–2 short lines.\nClean spacing.\nNo markdown.\nNo bold.\nNever use ** or formatting symbols.\nMaximum 1 emoji if needed.\nUse lists when needed.\n\nTone\nConfident, friendly, lightly witty.\nHumor about automation only.\n\nExample tone\nAutomation loves doing boring work so humans don’t have to 😄\n\nRules\n• Always answer the user’s question first\n• Ask only one simple question at a time\n• Close conversation within 5 messages and thank politely\n• If asked about the agency use Knowledge tool\n\nMemory:\n{{ $json.memoryContext }}\n\nLead Flow\n\nIf the user wants to proceed ask:\n\nWould you like our team to reach out?\n\nIf yes send:\n\nPlease share:\n\nName\nEmail\nPhone\nRequirement\n\nContact Extraction\n\nUser messages may be messy or unlabeled.\n\nExtract:\n\nFirst valid email → EMAIL\nFirst valid phone number → PHONE\nFirst non-email text line → NAME\nRemaining text → REQUIREMENT\n\nImportant rules\n\n• Never invent values\n• Never write Unknown\n• Never guess missing data\n\nIf any field is missing ask ONLY for that field.\n\nExample\nIf name missing:\n\nCould you share your name?\n\nOnly after ALL fields exist show summary:\n\nName:\nEmail:\nPhone:\nRequirement:\n\nThen ask:\n\nIs this correct?\n\nFinal Response\n\nAfter confirmation return ONLY this JSON:\n\n{\n\"store_lead\": true,\n\"NAME\": \"\",\n\"EMAIL\": \"\",\n\"PHONE\": \"\",\n\"REQUIRMENT\": \"\",\n\"SESSION_ID\": \"{{ $('Webhook').item.json.body.entry[0].messaging[0].sender.id }}\"\n}\n\nNever output JSON otherwise.\n\nReturn only the raw JSON object.\n\nPricing\nNever mention numbers.\nSay pricing depends on the business needs and automation scope.\n\nPersonality\n\nCalm, smart, efficient.\nUses small clever automation jokes.\n\nNever joke about the customer."
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        2048,
-        832
+        2992,
+        2336
       ],
-      "id": "858c4e7a-3cfa-4815-93da-191575f6a77a",
-      "name": "AI Agent2",
+      "id": "7b6f4145-57ba-4081-95a9-560312227015",
+      "name": "AI Agent",
       "retryOnFail": true
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://graph.instagram.com/v25.0/{{ $('Webhook1').item.json.body.entry[0].messaging[0].recipient.id }}/messages",
+        "url": "=https://graph.instagram.com/v25.0/{{ $('Webhook').item.json.body.entry[0].messaging[0].recipient.id }}/messages",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -202,7 +249,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ {\n messaging_type: \"RESPONSE\",\n recipient: {\nid: $('Webhook1').item.json.body.entry[0].messaging[0].sender.id\n },\nmessage: {\ntext: $json.output\n}\n} }}",
+        "jsonBody": "={{ {\n messaging_type: \"RESPONSE\",\n recipient: {\nid: $('Webhook').item.json.body.entry[0].messaging[0].sender.id\n },\nmessage: {\ntext: $json.output\n}\n} }}",
         "options": {
           "redirect": {
             "redirect": {}
@@ -212,11 +259,11 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        2720,
-        944
+        3488,
+        2448
       ],
-      "id": "83c7891e-2a70-4f58-b8e7-c89488452c60",
-      "name": "HTTP Request3"
+      "id": "7b1ab44e-8c8d-4e7c-b7c2-73e1d46a1334",
+      "name": "HTTP Request"
     },
     {
       "parameters": {
@@ -227,11 +274,11 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        1776,
-        432
+        2544,
+        1936
       ],
-      "id": "c0fda8da-faeb-4963-a7d5-2820ec16d486",
-      "name": "Respond to Webhook1"
+      "id": "d4eca8c6-5d6a-436f-8111-694833477c05",
+      "name": "Respond to Webhook"
     },
     {
       "parameters": {
@@ -269,11 +316,11 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        1568,
-        448
+        2336,
+        1952
       ],
-      "id": "cd193928-1bde-413d-8818-7317767ee8f8",
-      "name": "If2"
+      "id": "a0b1e64f-7e9a-47ef-89ae-50bdb3213d9e",
+      "name": "If"
     },
     {
       "parameters": {
@@ -284,11 +331,11 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
       "position": [
-        1568,
-        688
+        2336,
+        2192
       ],
-      "id": "739bcf09-a1ab-4c71-9f46-984d11f39010",
-      "name": "Switch1"
+      "id": "3a1cad85-6fb4-46b6-a339-5f79685afe6f",
+      "name": "Switch"
     },
     {
       "parameters": {
@@ -299,16 +346,16 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        2048,
-        560
+        2816,
+        2064
       ],
-      "id": "68d09415-ec19-4470-845b-25a5a4aebd67",
-      "name": "AI Agent3"
+      "id": "38445d83-4e17-4641-b941-f12b7ce26f85",
+      "name": "AI Agent4"
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://graph.instagram.com/v25.0/{{ $('Webhook1').item.json.body.entry[0].changes[0].value.from.id }}/replies",
+        "url": "=https://graph.instagram.com/v25.0/{{ $('Webhook').item.json.body.entry[0].changes[0].value.from.id }}/replies",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -332,11 +379,11 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        2336,
-        560
+        3104,
+        2064
       ],
-      "id": "7a58fa04-08cb-4e4b-9b6a-74cd57c9f63a",
-      "name": "HTTP Request4"
+      "id": "e513fe95-6376-4f5f-a97c-bac5765b7466",
+      "name": "HTTP Request6"
     },
     {
       "parameters": {
@@ -347,11 +394,11 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1856,
-        560
+        2624,
+        2064
       ],
-      "id": "471655e2-7f62-48ea-8e7e-81f52e9481ee",
-      "name": "Edit Fields4"
+      "id": "e68b5987-4aa7-452c-ba47-90d4ff731f7b",
+      "name": "Edit Fields"
     },
     {
       "parameters": {
@@ -362,11 +409,11 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1856,
-        832
+        2464,
+        2384
       ],
-      "id": "3eef20c4-5542-4cd4-8bef-3ea177c06f35",
-      "name": "Edit Fields5"
+      "id": "6d9d24a9-dbf7-4309-a1e4-46fc8ff10847",
+      "name": "Edit Fields8"
     },
     {
       "parameters": {
@@ -379,11 +426,11 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
       "typeVersion": 1,
       "position": [
-        1952,
-        1040
+        2720,
+        2544
       ],
-      "id": "4cb0d7a4-54da-47dd-8187-40dc9834ec53",
-      "name": "Groq Chat Model1",
+      "id": "68b25da4-2492-4c59-a5f8-6eb1d1abd402",
+      "name": "Groq Chat Model",
       "credentials": {
         "groqApi": {
           "id": "EFQCmqsVrnw4OqAW",
@@ -406,11 +453,11 @@
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
       "position": [
-        2096,
-        1216
+        2864,
+        2720
       ],
-      "id": "f2966b0a-d99b-4274-bc96-c8d7ea8bf214",
-      "name": "Download file1",
+      "id": "73957f6c-9569-4dfa-b5f8-056edd2aed46",
+      "name": "Download file",
       "credentials": {
         "googleDriveOAuth2Api": {
           "id": "lLm1Mzt83crF4rZe",
@@ -425,11 +472,11 @@
       "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
       "typeVersion": 1,
       "position": [
-        2240,
-        1376
+        3008,
+        2880
       ],
-      "id": "a69d06f7-8c28-4c65-a17c-c20e13c0c67d",
-      "name": "Embeddings Google Gemini1",
+      "id": "b8056496-dddd-4a70-830d-97d738a54170",
+      "name": "Embeddings Google Gemini",
       "credentials": {
         "googlePalmApi": {
           "id": "8JwcBNO8t0Rbq5Id",
@@ -447,11 +494,11 @@
       "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
       "typeVersion": 1.1,
       "position": [
-        2352,
-        1376
+        3120,
+        2880
       ],
-      "id": "f3198f8c-ba42-4df2-b6bc-dc25c158638c",
-      "name": "Default Data Loader1"
+      "id": "da7da297-d8fd-46db-afa1-00e6e1cf635a",
+      "name": "Default Data Loader"
     },
     {
       "parameters": {
@@ -461,11 +508,11 @@
       "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
       "typeVersion": 1,
       "position": [
-        2352,
-        1504
+        3120,
+        3008
       ],
-      "id": "33ee73d3-7fed-4047-8a35-0bb191065f28",
-      "name": "Recursive Character Text Splitter1"
+      "id": "5e26edea-4e6a-437c-8822-23a3a4b035d3",
+      "name": "Recursive Character Text Splitter"
     },
     {
       "parameters": {
@@ -482,11 +529,11 @@
       "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
       "typeVersion": 1.3,
       "position": [
-        2240,
-        1216
+        3008,
+        2720
       ],
-      "id": "48f39ea6-4aa1-4d96-8432-317aa3ae309b",
-      "name": "Pinecone Vector Store2",
+      "id": "8bc17206-542e-4989-b4da-57d650e99dab",
+      "name": "Pinecone Vector Store",
       "credentials": {
         "pineconeApi": {
           "id": "UndLstXHKkF6veLc",
@@ -510,31 +557,17 @@
       "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
       "typeVersion": 1.3,
       "position": [
-        2240,
-        1040
+        3008,
+        2544
       ],
-      "id": "380ba0b5-d1d6-400a-a972-79d5e9e270d7",
-      "name": "Pinecone Vector Store3",
+      "id": "f5e99203-c7d7-45ca-823b-fc4ea7f6920b",
+      "name": "Pinecone Vector Store4",
       "credentials": {
         "pineconeApi": {
           "id": "UndLstXHKkF6veLc",
           "name": "PineconeApi account"
         }
       }
-    },
-    {
-      "parameters": {
-        "sessionIdType": "customKey",
-        "sessionKey": "={{ $('Webhook1').item.json.body.entry[0].messaging[0].sender.id }}"
-      },
-      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
-      "typeVersion": 1.3,
-      "position": [
-        2144,
-        1040
-      ],
-      "id": "897b7c1c-5b63-4439-96fc-bdaac677a26d",
-      "name": "Simple Memory1"
     },
     {
       "parameters": {
@@ -565,11 +598,11 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        2512,
-        832
+        3280,
+        2336
       ],
-      "id": "2d263698-781b-41d3-8908-174eb72f97b7",
-      "name": "If3"
+      "id": "9abd829e-291a-4108-8520-2c2b57dae2d5",
+      "name": "If4"
     },
     {
       "parameters": {
@@ -618,16 +651,16 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        2704,
-        752
+        3472,
+        2256
       ],
-      "id": "ec6b7b9a-9054-4db6-af43-d53803ef8585",
-      "name": "Edit Fields6"
+      "id": "6f5820bc-65ab-465b-a54f-8a7012db0e98",
+      "name": "Edit Fields9"
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://graph.instagram.com/v25.0/{{ $('Webhook1').item.json.body.entry[0].messaging[0].recipient.id }}/messages",
+        "url": "=https://graph.instagram.com/v25.0/{{ $('Webhook').item.json.body.entry[0].messaging[0].recipient.id }}/messages",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -639,7 +672,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ {\n messaging_type: \"RESPONSE\",\n recipient: {\nid: $('Webhook1').item.json.body.entry[0].messaging[0].sender.id\n },\nmessage: {\ntext: $json.confirmationMessage\n}\n} }}",
+        "jsonBody": "={{ {\n messaging_type: \"RESPONSE\",\n recipient: {\nid: $('Webhook').item.json.body.entry[0].messaging[0].sender.id\n },\nmessage: {\ntext: $json.confirmationMessage\n}\n} }}",
         "options": {
           "redirect": {
             "redirect": {}
@@ -649,11 +682,11 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        3392,
-        752
+        4160,
+        2256
       ],
-      "id": "defc8416-3dc3-448f-9dfa-c8accb05f379",
-      "name": "HTTP Request5"
+      "id": "e79265cd-2d71-4c66-b6aa-fc0c8a340308",
+      "name": "HTTP Request7"
     },
     {
       "parameters": {
@@ -672,11 +705,11 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        3232,
-        752
+        4000,
+        2256
       ],
-      "id": "27fc994b-bf09-4698-8d31-42f92fcde845",
-      "name": "Edit Fields7"
+      "id": "02b6e294-12bb-40c1-807b-2244887ec974",
+      "name": "Edit Fields10"
     },
     {
       "parameters": {
@@ -773,11 +806,11 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        2896,
-        752
+        3664,
+        2256
       ],
-      "id": "ce1e99e7-b198-4dd5-a0df-13d3dc6b5778",
-      "name": "Append or update row in sheet1",
+      "id": "afca939d-ebdb-429f-83bd-25a43159d2d0",
+      "name": "Append or update row in sheet",
       "credentials": {
         "googleSheetsOAuth2Api": {
           "id": "2dvuvMpwQe7b0sGm",
@@ -796,11 +829,11 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
       "typeVersion": 1,
       "position": [
-        2048,
-        1040
+        2816,
+        2544
       ],
-      "id": "ece29dc5-7567-43e4-9c5c-10336ab9d467",
-      "name": "Mistral Cloud Chat Model1",
+      "id": "2b7b1b5f-9ab6-4a26-a5c1-bc959af2e3ee",
+      "name": "Mistral Cloud Chat Model",
       "credentials": {
         "mistralCloudApi": {
           "id": "JIyXgNNVOA27Zc0k",
@@ -822,11 +855,11 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
-        2560,
-        560
+        3344,
+        2064
       ],
-      "name": "Every 30 Minutes1",
-      "id": "5594c574-438b-49bc-b622-ceb83a951339"
+      "name": "Every 30 Minutes",
+      "id": "b883ebb6-54b9-44c4-90f7-ea241b4b2001"
     },
     {
       "parameters": {
@@ -849,11 +882,11 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        2800,
-        560
+        3584,
+        2064
       ],
-      "name": "Get Pending Leads1",
-      "id": "ef5b7f23-27c7-4e55-ba8b-4e5101014fa7",
+      "name": "Get Pending Leads",
+      "id": "5f682026-b819-4687-8efd-73a8197127d3",
       "credentials": {
         "googleSheetsOAuth2Api": {
           "id": "2dvuvMpwQe7b0sGm",
@@ -868,11 +901,11 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3040,
-        560
+        3824,
+        2064
       ],
-      "name": "Filter 4hr+ No Conversion1",
-      "id": "21f99437-b77b-4626-87c2-5d4d260ea52c"
+      "name": "Filter 4hr+ No Conversion",
+      "id": "adda9037-b2f0-4810-9e77-f72b0fa5ec93"
     },
     {
       "parameters": {
@@ -901,11 +934,11 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        3280,
-        560
+        4064,
+        2064
       ],
-      "name": "Any Due Follow-ups?1",
-      "id": "b2fd753e-426f-463c-bd4b-aa4bf236240e"
+      "name": "Any Due Follow-ups?",
+      "id": "42102338-478e-49a3-a8ba-05a7665fbc60"
     },
     {
       "parameters": {
@@ -928,11 +961,11 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        3520,
-        560
+        4304,
+        2064
       ],
-      "name": "Send Follow-up DM1",
-      "id": "507e58be-390d-4160-ae83-4d8793ec1a2f"
+      "name": "Send Follow-up DM",
+      "id": "623ca18d-ea0c-4e14-b973-6a26e18dc410"
     },
     {
       "parameters": {
@@ -956,7 +989,7 @@
           "value": {
             "FOLLOW_UP_TIME": "={{ $now.toISO() }}",
             "FOLLOW_UP_SENT": "={{true}}",
-            "SENDER_ID": "={{ $('Get Pending Leads1').item.json.SENDER_ID }}"
+            "SENDER_ID": "={{ $('Get Pending Leads').item.json.SENDER_ID }}"
           },
           "matchingColumns": [
             "SENDER_ID"
@@ -1040,11 +1073,11 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        3760,
-        560
+        4544,
+        2064
       ],
-      "name": "Mark Follow-up Sent1",
-      "id": "55200102-5dd1-4bd7-b90c-78afb8dd46fd",
+      "name": "Mark Follow-up Sent2",
+      "id": "449288fe-2b1c-48b9-840c-bc49e89f9884",
       "credentials": {
         "googleSheetsOAuth2Api": {
           "id": "2dvuvMpwQe7b0sGm",
@@ -1054,322 +1087,328 @@
     }
   ],
   "connections": {
-    "Mark CONVERTED": {
+    "Check DB": {
       "main": [
         [
           {
-            "node": "Edit Fields7",
+            "node": "Format Memory",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Webhook1": {
+    "Format Memory": {
       "main": [
         [
           {
-            "node": "If2",
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark CONVERTED1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Switch1",
+            "node": "Switch",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "AI Agent2": {
+    "AI Agent": {
       "main": [
         [
           {
-            "node": "If3",
+            "node": "If4",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "HTTP Request3": {
+    "HTTP Request": {
       "main": [
         [
           {
-            "node": "Log to PendingFollowUps",
+            "node": "Log to PendingFollowUps1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "If2": {
+    "If": {
       "main": [
         [
           {
-            "node": "Respond to Webhook1",
+            "node": "Respond to Webhook",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Switch1": {
+    "Switch": {
       "main": [
         [
           {
-            "node": "Edit Fields4",
+            "node": "Edit Fields",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Edit Fields5",
+            "node": "Edit Fields8",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "AI Agent3": {
+    "AI Agent4": {
       "main": [
         [
           {
-            "node": "HTTP Request4",
+            "node": "HTTP Request6",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Edit Fields4": {
+    "Edit Fields": {
       "main": [
         [
           {
-            "node": "AI Agent3",
+            "node": "AI Agent4",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Edit Fields5": {
+    "Edit Fields8": {
       "main": [
         [
           {
-            "node": "AI Agent2",
+            "node": "Check DB",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Groq Chat Model1": {
+    "Groq Chat Model": {
       "ai_languageModel": [
         [
           {
-            "node": "AI Agent3",
+            "node": "AI Agent4",
             "type": "ai_languageModel",
             "index": 0
           }
         ]
       ]
     },
-    "Download file1": {
+    "Download file": {
       "main": [
         [
           {
-            "node": "Pinecone Vector Store2",
+            "node": "Pinecone Vector Store",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Embeddings Google Gemini1": {
+    "Embeddings Google Gemini": {
       "ai_embedding": [
         [
           {
-            "node": "Pinecone Vector Store2",
+            "node": "Pinecone Vector Store",
             "type": "ai_embedding",
             "index": 0
           },
           {
-            "node": "Pinecone Vector Store3",
+            "node": "Pinecone Vector Store4",
             "type": "ai_embedding",
             "index": 0
           }
         ]
       ]
     },
-    "Default Data Loader1": {
+    "Default Data Loader": {
       "ai_document": [
         [
           {
-            "node": "Pinecone Vector Store2",
+            "node": "Pinecone Vector Store",
             "type": "ai_document",
             "index": 0
           }
         ]
       ]
     },
-    "Recursive Character Text Splitter1": {
+    "Recursive Character Text Splitter": {
       "ai_textSplitter": [
         [
           {
-            "node": "Default Data Loader1",
+            "node": "Default Data Loader",
             "type": "ai_textSplitter",
             "index": 0
           }
         ]
       ]
     },
-    "Pinecone Vector Store3": {
+    "Pinecone Vector Store4": {
       "ai_tool": [
         [
           {
-            "node": "AI Agent2",
+            "node": "AI Agent",
             "type": "ai_tool",
             "index": 0
           },
           {
-            "node": "AI Agent3",
+            "node": "AI Agent4",
             "type": "ai_tool",
             "index": 0
           }
         ]
       ]
     },
-    "Simple Memory1": {
-      "ai_memory": [
-        [
-          {
-            "node": "AI Agent2",
-            "type": "ai_memory",
-            "index": 0
-          },
-          {
-            "node": "AI Agent3",
-            "type": "ai_memory",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "If3": {
+    "If4": {
       "main": [
         [
           {
-            "node": "Edit Fields6",
+            "node": "Edit Fields9",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "HTTP Request3",
+            "node": "HTTP Request",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Edit Fields6": {
+    "Edit Fields9": {
       "main": [
         [
           {
-            "node": "Append or update row in sheet1",
+            "node": "Append or update row in sheet",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Edit Fields7": {
+    "Edit Fields10": {
       "main": [
         [
           {
-            "node": "HTTP Request5",
+            "node": "HTTP Request7",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Append or update row in sheet1": {
+    "Append or update row in sheet": {
       "main": [
         [
           {
-            "node": "Mark CONVERTED",
+            "node": "Mark CONVERTED1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Mistral Cloud Chat Model1": {
+    "Mistral Cloud Chat Model": {
       "ai_languageModel": [
         [
           {
-            "node": "AI Agent2",
+            "node": "AI Agent",
             "type": "ai_languageModel",
             "index": 0
           }
         ]
       ]
     },
-    "Every 30 Minutes1": {
+    "Every 30 Minutes": {
       "main": [
         [
           {
-            "node": "Get Pending Leads1",
+            "node": "Get Pending Leads",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Get Pending Leads1": {
+    "Get Pending Leads": {
       "main": [
         [
           {
-            "node": "Filter 4hr+ No Conversion1",
+            "node": "Filter 4hr+ No Conversion",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Filter 4hr+ No Conversion1": {
+    "Filter 4hr+ No Conversion": {
       "main": [
         [
           {
-            "node": "Any Due Follow-ups?1",
+            "node": "Any Due Follow-ups?",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Any Due Follow-ups?1": {
+    "Any Due Follow-ups?": {
       "main": [
         [
           {
-            "node": "Send Follow-up DM1",
+            "node": "Send Follow-up DM",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Send Follow-up DM1": {
+    "Send Follow-up DM": {
       "main": [
         [
           {
-            "node": "Mark Follow-up Sent1",
+            "node": "Mark Follow-up Sent2",
             "type": "main",
             "index": 0
           }
