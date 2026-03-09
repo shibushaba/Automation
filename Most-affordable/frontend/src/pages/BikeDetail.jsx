@@ -7,6 +7,7 @@ export default function BikeDetail() {
   const { id } = useParams();
   const [bike, setBike] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedImageIdx, setSelectedImageIdx] = useState(0);
 
   useEffect(() => {
     async function fetchBike() {
@@ -50,7 +51,9 @@ export default function BikeDetail() {
 
   // Pre-fill a WhatsApp message
   const waMessage = encodeURIComponent(`Hi! Is ${bike.id} (${bike.year} ${bike.make} ${bike.model}) still available?`);
-  const imageUrl = (bike.image_urls && bike.image_urls[0]) || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=1000&auto=format&fit=crop';
+  
+  const images = bike.image_urls && bike.image_urls.length > 0 ? bike.image_urls : ['https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=1000&auto=format&fit=crop'];
+  const mainImage = images[selectedImageIdx] || images[0];
 
   return (
     <div className="container page-wrapper">
@@ -59,8 +62,23 @@ export default function BikeDetail() {
       </Link>
       
       <div className="detail-layout">
-        <div className="detail-img-section glass-panel">
-          <img src={imageUrl} alt={`${bike.make} ${bike.model}`} />
+        <div className="detail-gallery-column">
+          <div className="detail-img-section glass-panel">
+            <img src={mainImage} alt={`${bike.make} ${bike.model}`} />
+          </div>
+          {images.length > 1 && (
+            <div className="thumbnail-gallery">
+              {images.map((img, idx) => (
+                <div 
+                  key={idx} 
+                  className={`thumbnail ${idx === selectedImageIdx ? 'active' : ''}`}
+                  onClick={() => setSelectedImageIdx(idx)}
+                >
+                  <img src={img} alt={`Thumbnail ${idx + 1}`} />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         
         <div className="detail-info-section glass-panel">

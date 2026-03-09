@@ -53,7 +53,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const text = $input.item.json.chatInput || '';\nconst match = text.match(/BK-\\d{4}/i);\nreturn {\n  original_message: text,\n  extracted_id: match ? match[0].toUpperCase() : 'NONE'\n};"
+        "jsCode": "const text = $input.item.json.chatInput || '';\nconst match = text.match(/BK-\\d+/i);\nreturn {\n  original_message: text,\n  extracted_id: match ? match[0].toUpperCase() : 'NONE'\n};"
       },
       "id": "d6bbd6e8-e930-416a-8259-1ed3939aed91",
       "name": "Extract Request Data",
