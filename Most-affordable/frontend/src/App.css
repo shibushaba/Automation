@@ -19,8 +19,8 @@
 }
 
 .search-input:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.2);
+    border-color: var(--text-main);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
 }
 
 .login-container {
@@ -71,8 +71,9 @@
 }
 
 .error-message {
-    color: #ef4444;
-    background: rgba(239, 68, 68, 0.1);
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     padding: 10px;
     border-radius: 6px;
     margin-bottom: 20px;
@@ -148,22 +149,24 @@
 }
 
 .toggle-btn {
-    background: rgba(59, 130, 246, 0.2);
-    color: #60a5fa;
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .toggle-btn:hover {
-    background: rgba(59, 130, 246, 0.4);
+    background: rgba(255, 255, 255, 0.2);
 }
 
 .delete-btn {
-    background: rgba(239, 68, 68, 0.1);
-    color: #f87171;
-    border: 1px solid rgba(239, 68, 68, 0.2);
+    background: rgba(0, 0, 0, 0.5);
+    color: #a1a1aa;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .delete-btn:hover {
-    background: rgba(239, 68, 68, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
 }
 
 .add-bike-container {

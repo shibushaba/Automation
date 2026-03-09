@@ -1,16 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --bg-dark: #09090b;
-  --bg-card: rgba(24, 24, 27, 0.6);
-  --text-main: #f8fafc;
-  --text-muted: #a1a1aa;
-  --accent: #3b82f6;
-  --accent-glow: rgba(59, 130, 246, 0.5);
+  --bg-dark: #000000;
+  --bg-card: rgba(15, 15, 15, 0.4);
+  --text-main: #ffffff;
+  --text-muted: #888888;
+  --accent: #ffffff;
+  --accent-glow: rgba(255, 255, 255, 0.15);
 
-  --border-glass: rgba(255, 255, 255, 0.08);
-  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  --blur-glass: blur(12px);
+  --border-glass: rgba(255, 255, 255, 0.15);
+  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+  --blur-glass: blur(24px);
   --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
@@ -28,7 +28,7 @@ body {
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
   /* subtle radial glow in background */
-  background-image: radial-gradient(circle at 50% -20%, rgba(59, 130, 246, 0.15), transparent 60%);
+  background-image: radial-gradient(circle at 50% -20%, rgba(255, 255, 255, 0.05), transparent 70%);
   background-attachment: fixed;
 }
 
@@ -81,14 +81,14 @@ a {
 }
 
 .primary-btn {
-  background: var(--accent);
-  color: white;
+  background: var(--text-main);
+  color: var(--bg-dark);
   border: none;
   box-shadow: 0 4px 15px var(--accent-glow);
 }
 
 .primary-btn:hover {
-  background: #2563eb;
+  background: #e4e4e7;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px var(--accent-glow);
 }
@@ -121,7 +121,7 @@ a {
 .navbar {
   padding: 20px 0;
   border-bottom: 1px solid var(--border-glass);
-  background: rgba(9, 9, 11, 0.8);
+  background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(10px);
   position: sticky;
   top: 0;
@@ -138,10 +138,8 @@ a {
   font-size: 1.5rem;
   font-weight: 700;
   letter-spacing: -0.05em;
-  background: linear-gradient(135deg, #fff, #a1a1aa);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  background: none;
+  color: white;
 }
 
 /* Footer Layouts */
@@ -198,9 +196,9 @@ a {
 }
 
 .search-input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3), 0 4px 20px rgba(0, 0, 0, 0.3);
-  background: rgba(30, 30, 35, 0.8);
+  border-color: var(--text-main);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2), 0 4px 20px rgba(0, 0, 0, 0.5);
+  background: rgba(20, 20, 20, 0.8);
 }
 
 .bike-grid {
@@ -259,15 +257,15 @@ a {
 }
 
 .status-available {
-  background: rgba(34, 197, 94, 0.2);
-  color: #4ade80;
-  border: 1px solid rgba(74, 222, 128, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .status-sold {
-  background: rgba(239, 68, 68, 0.2);
-  color: #f87171;
-  border: 1px solid rgba(248, 113, 113, 0.3);
+  background: rgba(0, 0, 0, 0.4);
+  color: #888888;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .bike-info {
@@ -336,10 +334,11 @@ a {
 
 .empty-state-icon {
   margin-bottom: 24px;
-  background: rgba(59, 130, 246, 0.1);
+  background: rgba(255, 255, 255, 0.05);
   padding: 24px;
   border-radius: 50%;
-  color: var(--accent);
+  color: var(--text-main);
+  border: 1px solid var(--border-glass);
 }
 
 /* Detail Page */
