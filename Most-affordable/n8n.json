@@ -1,0 +1,149 @@
+{
+  "name": "Intelligent Bike Dealership Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1000,
+        600
+      ],
+      "id": "4b8c38bc-622d-4f97-9903-bbf256bc069e",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "M8x78S7HaYYge2Lz",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "bikes",
+        "limit": 1,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.extracted_id }}"
+            }
+          ]
+        }
+      },
+      "id": "05227684-8f06-4ff0-8e67-898799fb3540",
+      "name": "Supabase Fetch",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        800,
+        400
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "vNTP1XgP3wsW0tiM",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.item.json.chatInput || '';\nconst match = text.match(/BK-\\d{4}/i);\nreturn {\n  original_message: text,\n  extracted_id: match ? match[0].toUpperCase() : 'NONE'\n};"
+      },
+      "id": "d6bbd6e8-e930-416a-8259-1ed3939aed91",
+      "name": "Extract Request Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        600,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "db143405-60aa-472e-b62e-8375f2314847",
+      "name": "Chat Trigger",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1,
+      "position": [
+        400,
+        400
+      ],
+      "webhookId": "ddf8efbd-5544-4164-ae2b-a9f4d5ccac13"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "User Message: {{ $('Extract Request Data').item.json.original_message }}\n\nDatabase Search Result: {{ JSON.stringify($json) }}",
+        "options": {
+          "systemMessage": "You are a friendly AI assistant for 'MotoX', a premium bike dealership. \nYour job is to answer customer questions about bike availability. \nYou have been provided with the User's Message, and the direct Database Search Result for their query.\n\nIf the Database Result contains a bike:\nRespond enthusiastically, include the Year, Make, Model, and Price. VERY IMPORTANT: Always give them the direct website link to view photos using this exact format: https://most-affordable.vercel.app/bike/[THE_BIKE_ID].\n\nIf the Database Result is empty or the bike is SOLD:\nApologize politely, explain it is not available or you need a valid BK-XXXX ID, and invite them to browse other vehicles on https://most-affordable.vercel.app/"
+        }
+      },
+      "id": "590be0a9-e618-4a2f-9c33-aee2569874db",
+      "name": "Generate AI Response",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1,
+      "position": [
+        1000,
+        400
+      ]
+    }
+  ],
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate AI Response",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Fetch": {
+      "main": [
+        [
+          {
+            "node": "Generate AI Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Request Data": {
+      "main": [
+        [
+          {
+            "node": "Supabase Fetch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract Request Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "812e57160b6cfa0488283afdc6a904b27f91c8dd7755e053008327f19ff2ef3d"
+  }
+}
