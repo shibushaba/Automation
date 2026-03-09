@@ -129,10 +129,8 @@ a {
   }
 }
 
-/* Header Navbar */
+/* Header Navbar (Architectural Stack) */
 .navbar {
-  padding: 24px 0;
-  border-bottom: 1px solid var(--border-classic);
   background: var(--bg-card);
   position: sticky;
   top: 0;
@@ -140,18 +138,57 @@ a {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
 }
 
-.navbar .container {
+.nav-container {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
+  width: 100%;
+}
+
+.nav-top {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 30px 0 20px 0;
+  border-bottom: 1px solid var(--border-classic);
+}
+
+.nav-bottom {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border-classic);
+  position: relative;
+}
+
+.nav-item {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  transition: var(--transition);
+}
+
+.nav-item:hover {
+  color: var(--text-main);
+}
+
+.admin-trigger {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .logo {
   font-family: var(--font-serif);
-  font-size: 1.6rem;
+  font-size: 2rem;
   font-weight: 700;
-  letter-spacing: 0.05em;
-  background: none;
+  letter-spacing: 0.1em;
   color: var(--text-main);
   text-transform: uppercase;
 }
@@ -187,35 +224,34 @@ a {
 }
 
 .bike-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 32px;
-  margin-top: 20px;
-}
-
-.bike-card {
-  position: relative;
-  overflow: hidden;
-  transition: var(--transition);
-  height: 480px;
-  /* Taller card for elegant spacing */
   display: flex;
   flex-direction: column;
-  background: var(--bg-card);
-  border: 1px solid var(--border-classic);
-  border-radius: 4px;
-  /* Structured square-ish look */
+  gap: 60px;
+  margin-top: 40px;
 }
 
-.bike-card:hover {
-  transform: translateY(-4px);
+/* Editorial Horizontal List View */
+.bike-list-item {
+  display: flex;
+  background: var(--bg-card);
+  border: 1px solid var(--border-classic);
   box-shadow: var(--shadow-classic);
+  height: 400px;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  transition: var(--transition);
+}
+
+.bike-list-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.08);
   border-color: var(--accent);
 }
 
 .bike-img-container {
-  height: 55%;
-  width: 100%;
+  flex: 0 0 55%;
+  height: 100%;
   overflow: hidden;
   position: relative;
   background: #f0f0f0;
@@ -225,11 +261,11 @@ a {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.bike-card:hover .bike-img {
-  transform: scale(1.05);
+.bike-list-item:hover .bike-img {
+  transform: scale(1.03);
 }
 
 .status-badge {
@@ -257,13 +293,14 @@ a {
   border: 1px solid #bbbbbb;
 }
 
+/* Remove old absolute positioning from grid cards since we are horizontal now */
 .bike-info {
-  padding: 30px;
-  flex-grow: 1;
+  flex: 1;
+  padding: 40px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border-top: 1px solid var(--border-classic);
+  border-top: none;
 }
 
 .bike-id {

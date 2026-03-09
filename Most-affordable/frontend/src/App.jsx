@@ -13,15 +13,17 @@ function App() {
   return (
     <Router>
       <div className="app-container">
-        <header className="navbar glass-panel">
-          <div className="nav-content">
-            <Link to="/" className="logo">MOST AFFORDABLE.</Link>
-            <nav className="nav-links">
-              <Link to="/">Inventory</Link>
+        <header className="navbar">
+          <div className="nav-container">
+            <div className="nav-top">
+              <Link to="/" className="logo">MOST AFFORDABLE.</Link>
+            </div>
+            <nav className="nav-bottom">
+              <Link to="/" className="nav-item">Inventory</Link>
               {isAdmin ? (
-                <Link to="/admin/dashboard" className="glass-btn" style={{padding: '4px 12px', marginLeft: '12px'}}>Dashboard</Link>
+                <Link to="/admin/dashboard" className="nav-item">Dashboard</Link>
               ) : (
-                <Link to="/admin" className="subtle-link" style={{marginLeft: '12px'}}>Admin</Link>
+                <Link to="/admin" className="subtle-link admin-trigger">.</Link>
               )}
             </nav>
           </div>

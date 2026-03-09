@@ -37,12 +37,13 @@ export default function Home() {
 
   return (
     <div className="page-wrapper container">
-      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-        <h1 style={{ fontSize: '3rem', marginBottom: '16px' }}>
-          Ride Your <span style={{ color: 'var(--accent)' }}>Dream</span>
+      <div style={{ textAlign: 'center', margin: '60px 0 80px 0' }}>
+        <h1 style={{ fontSize: '4rem', marginBottom: '24px', lineHeight: '1.2' }}>
+          Discover the Art of <br />
+          <span style={{ color: 'var(--accent)', fontStyle: 'italic' }}>High-Performance</span> Riding.
         </h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem', maxWidth: '600px', margin: '0 auto', marginBottom: '40px' }}>
-          Explore our premium selection of pre-owned sports bikes and supercars, delivered with unmatched quality and service.
+        <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem', maxWidth: '600px', margin: '0 auto', marginBottom: '60px', fontFamily: 'var(--font-serif)' }}>
+          Explore our premium selection of pre-owned sports bikes, meticulously curated and delivered with unmatched quality and service.
         </p>
         
         <div className="search-wrapper">
@@ -70,7 +71,7 @@ export default function Home() {
       ) : (
         <div className="bike-grid">
           {filteredBikes.map(bike => (
-            <div key={bike.id} className="bike-card glass-panel">
+            <div key={bike.id} className="bike-list-item">
               <span className={`status-badge ${bike.status === 'available' ? 'status-available' : 'status-sold'}`}>
                 {bike.status}
               </span>
@@ -88,9 +89,11 @@ export default function Home() {
                   <h3 className="bike-title">{bike.year} {bike.make} {bike.model}</h3>
                   <div className="bike-price">${(bike.price || 0).toLocaleString()}</div>
                 </div>
-                <Link to={`/bike/${bike.id}`} style={{ marginTop: '16px' }} className="glass-btn">
-                  View Details <ChevronRight size={16} />
-                </Link>
+                <div>
+                  <Link to={`/bike/${bike.id}`} className="glass-btn" style={{ width: '100%', marginTop: '30px' }}>
+                    View Details
+                  </Link>
+                </div>
               </div>
             </div>
           ))}

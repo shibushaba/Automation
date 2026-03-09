@@ -67,18 +67,20 @@ const AdminDashboard = ({ isAdmin }) => {
 
   return (
     <div className="admin-dashboard fade-in">
-      <div className="admin-header">
+      <div className="admin-header-stacked">
         <h1>Dashboard Operations</h1>
-        <div className="admin-actions">
-          <input 
-            type="text" 
-            placeholder="Search by ID or Name..." 
-            className="search-input"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <button className="primary-btn" onClick={() => navigate('/admin/add')}>Add New Bike</button>
-        </div>
+        <p className="admin-subtitle">Manage your inventory, update pricing, and track availability.</p>
+      </div>
+      
+      <div className="admin-controls glass-panel">
+        <input 
+          type="text" 
+          placeholder="🔎 Search by ID, Make, or Model..." 
+          className="search-input"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        <button className="primary-btn" onClick={() => navigate('/admin/add')}>+ Add New Vehicle</button>
       </div>
 
       <div className="admin-table-container glass-panel">
