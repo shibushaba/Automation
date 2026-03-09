@@ -38,13 +38,10 @@ export default function Home() {
   return (
     <div className="page-wrapper container">
       <div style={{ textAlign: 'center', margin: '60px 0 80px 0' }}>
-        <h1 style={{ fontSize: '4rem', marginBottom: '24px', lineHeight: '1.2' }}>
+        <h1 className="hero-title" style={{ fontSize: '4rem', marginBottom: '40px', lineHeight: '1.2' }}>
           Discover the Art of <br />
           <span style={{ color: 'var(--accent)', fontStyle: 'italic' }}>High-Performance</span> Riding.
         </h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem', maxWidth: '600px', margin: '0 auto', marginBottom: '60px', fontFamily: 'var(--font-serif)' }}>
-          Explore our premium selection of pre-owned sports bikes, meticulously curated and delivered with unmatched quality and service.
-        </p>
         
         <div className="search-wrapper">
           <input 
