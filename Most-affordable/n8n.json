@@ -5,32 +5,32 @@
       "parameters": {
         "options": {}
       },
-      "id": "chat-trigger",
+      "id": "a7a77ba6-83c2-4a22-b658-71c4bcd4adf6",
       "name": "Chat Trigger",
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
       "typeVersion": 1,
-      "position": [ 200, 400 ],
+      "position": [ 3600, 2700 ],
       "webhookId": "ddf8efbd-5544-4164-ae2b-a9f4d5ccac13"
     },
     {
       "parameters": {
         "sessionKey": "={{ $sessionId }}"
       },
-      "id": "memory-node",
+      "id": "5b427453-9592-42b1-83fd-4fefed4cb8cb",
       "name": "Window Buffer Memory",
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1,
-      "position": [ 400, 600 ]
+      "position": [ 3900, 2900 ]
     },
     {
       "parameters": {
         "options": {}
       },
-      "id": "model-1",
+      "id": "8432fb5e-dab9-45dd-9112-f9be8885e867",
       "name": "Google Gemini Chat Model",
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
-      "position": [ 400, 200 ],
+      "position": [ 3800, 2900 ],
       "credentials": {
         "googlePalmApi": {
           "id": "M8x78S7HaYYge2Lz",
@@ -40,23 +40,27 @@
     },
     {
       "parameters": {
-        "prompt": "=System:\nYou are a classic and standard AI assistant for a premium bike dealership. You maintain conversation with the user to help them find a bike.\nYour goal is to either find a specific bike by ID (e.g. BK-1) OR save a general request (e.g. 'Himalayan 450') if they don't have an ID.\nTo save a general request, you MUST first confirm the specific bike name they want (e.g. 'You need Himalayan 450, is this correct?'). ONLY save the request when they say yes/confirm.\n\nYou MUST ALWAYS and ONLY respond with a valid JSON object in this exact format. No markdown, no backticks, no other text:\n{\n  \"reply_to_user\": \"Your conversational reply here\",\n  \"action\": \"none\" | \"search_db\" | \"save_request\",\n  \"action_param\": \"bike_id or bike_name or empty\"\n}\n\nRules:\n- If user provides a bike ID (e.g. BK-123), set action to 'search_db', action_param to 'BK-123', reply_to_user to 'Searching'.\n- If user confirms a general request (e.g. says yes after you ask), set action to 'save_request', action_param to the confirmed bike name, reply_to_user to 'Your request for a [Bike] has been saved and our dealership team will reach out to you shortly!'\n- Otherwise, set action to 'none', action_param to '', and set reply_to_user to your conversational response (e.g. asking for the bike name, confirming the bike name). Use max ONE emoji total."
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "System:\nYou are a classic and standard AI assistant for a premium bike dealership. You maintain conversation with the user to help them find a bike.\nYour goal is to either find a specific bike by ID (e.g. BK-1) OR save a general request (e.g. 'Himalayan 450') if they don't have an ID.\nTo save a general request, you MUST first confirm the specific bike name they want (e.g. 'You need Himalayan 450, is this correct?'). ONLY save the request when they say yes/confirm.\n\nYou MUST ALWAYS and ONLY respond with a valid JSON object in this exact format. No markdown, no backticks, no other text:\n{\n  \"reply_to_user\": \"Your conversational reply here\",\n  \"action\": \"none\" | \"search_db\" | \"save_request\",\n  \"action_param\": \"bike_id or bike_name or empty\"\n}\n\nRules:\n- If user provides a bike ID (e.g. BK-123), set action to 'search_db', action_param to 'BK-123', reply_to_user to 'Searching'.\n- If user confirms a general request (e.g. says yes after you ask), set action to 'save_request', action_param to the confirmed bike name, reply_to_user to 'Your request for a [Bike] has been saved and our dealership team will reach out to you shortly!'\n- Otherwise, set action to 'none', action_param to '', and set reply_to_user to your conversational response (e.g. asking for the bike name, confirming the bike name). Use max ONE emoji total."
+        }
       },
-      "id": "llm-1",
-      "name": "Conversational Logic LLM",
-      "type": "@n8n/n8n-nodes-langchain.chainLlm",
-      "typeVersion": 1,
-      "position": [ 400, 400 ]
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [ 3900, 2700 ],
+      "id": "4d5fb2a6-9358-4502-ae38-c00731acdf03",
+      "name": "AI Agent"
     },
     {
       "parameters": {
-        "jsCode": "try {\n  let str = $input.item.json.text || '';\n  str = str.replace(/```json/ig, '').replace(/```/g, '').trim();\n  const parsed = JSON.parse(str);\n  return [parsed];\n} catch(e) {\n  return [{ reply_to_user: \"I'm sorry, I misunderstood. Could you rephrase that?\", action: \"none\", action_param: \"\" }];\n}"
+        "jsCode": "try {\n  let str = $input.item.json.output || $input.item.json.text || $input.item.json.response || '';\n  str = str.replace(/```json/ig, '').replace(/```/g, '').trim();\n  const parsed = JSON.parse(str);\n  return [parsed];\n} catch(e) {\n  return [{ reply_to_user: \"I'm sorry, I misunderstood. Could you rephrase that?\", action: \"none\", action_param: \"\" }];\n}"
       },
-      "id": "parse-json",
+      "id": "a15f5c03-3094-445a-879e-056d20fef418",
       "name": "Parse JSON Output",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [ 600, 400 ]
+      "position": [ 4200, 2700 ]
     },
     {
       "parameters": {
@@ -85,8 +89,8 @@
       },
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
-      "position": [ 800, 400 ],
-      "id": "if-search",
+      "position": [ 4400, 2700 ],
+      "id": "d642795d-62a1-49e8-baba-9e2c2dbaf9b5",
       "name": "If Search DB"
     },
     {
@@ -116,8 +120,8 @@
       },
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
-      "position": [ 1000, 500 ],
-      "id": "if-save",
+      "position": [ 4600, 2800 ],
+      "id": "a8d6db8f-9083-4b73-a577-d343e8927a75",
       "name": "If Save Request"
     },
     {
@@ -135,11 +139,11 @@
           ]
         }
       },
-      "id": "supabase-fetch",
+      "id": "882c2f29-0fbb-4713-a5a1-9dfc8c9ed058",
       "name": "Supabase Fetch",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
-      "position": [ 1000, 200 ],
+      "position": [ 4600, 2500 ],
       "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
@@ -152,11 +156,11 @@
       "parameters": {
         "options": {}
       },
-      "id": "model-2",
+      "id": "aec2d4b1-281e-47a0-9010-81db0ceea315",
       "name": "Google Gemini (Format DB)",
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
-      "position": [ 1200, 0 ],
+      "position": [ 4800, 2600 ],
       "credentials": {
         "googlePalmApi": {
           "id": "M8x78S7HaYYge2Lz",
@@ -168,21 +172,21 @@
       "parameters": {
         "prompt": "=System:\nYou are a classic AI assistant for a premium bike dealership. Use max ONE emoji.\nIf Database Result contains an available bike:\nList its details EXACTLY in this format:\nBrand : [Make]\nModel : [Model]\nPrice : ₹[Price]\nColor : [Color]\nYear : [Year]\nKM : [KM]\nThen, politely provide the direct website link to view photos: https://most-affordable.vercel.app/bike/[THE_BIKE_ID].\n\nIf Database Result is empty or the bike is SOLD:\nApologize politely, explain it is not available, and invite them to browse vehicles on https://most-affordable.vercel.app/.\n======\nDatabase Search Result: {{ JSON.stringify($json) }}"
       },
-      "id": "llm-2",
+      "id": "bc76a0a4-49b2-4b45-a8e1-470fd396bca4",
       "name": "Format DB Result",
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1,
-      "position": [ 1200, 200 ]
+      "position": [ 4800, 2400 ]
     },
     {
       "parameters": {
-        "jsCode": "return { output: $input.item.json.text || 'Processing Error: AI did not return text.' };"
+        "jsCode": "return { output: $input.item.json.text || $input.item.json.output || 'Processing Error: AI did not return text.' };"
       },
-      "id": "format-ui-db",
+      "id": "48aab32d-77ff-4f67-a86f-63a6b6e9d493",
       "name": "Format DB Output UI",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [ 1400, 200 ]
+      "position": [ 5000, 2400 ]
     },
     {
       "parameters": {
@@ -191,11 +195,11 @@
         "columns": "message",
         "message": "={{ $('Parse JSON Output').item.json.action_param }}"
       },
-      "id": "supabase-insert",
+      "id": "d86dd706-9106-43c9-b3b1-f078d22d802a",
       "name": "Supabase Insert Request",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
-      "position": [ 1200, 400 ],
+      "position": [ 4800, 2700 ],
       "credentials": {
         "supabaseApi": {
           "id": "vNTP1XgP3wsW0tiM",
@@ -207,21 +211,21 @@
       "parameters": {
         "jsCode": "return { output: $('Parse JSON Output').item.json.reply_to_user || 'Your request has been successfully saved!' };"
       },
-      "id": "format-ui-save",
+      "id": "c22de657-3cad-4ed4-850e-926ca053416b",
       "name": "Format Save Output UI",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [ 1400, 400 ]
+      "position": [ 5000, 2700 ]
     },
     {
       "parameters": {
         "jsCode": "return { output: $('Parse JSON Output').item.json.reply_to_user || 'Something went wrong.' };"
       },
-      "id": "format-ui-none",
+      "id": "0a2be33f-210e-47e9-8fb1-8a5c0515f0ec",
       "name": "Format Normal Output UI",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [ 1200, 600 ]
+      "position": [ 4800, 2900 ]
     }
   ],
   "connections": {
@@ -229,7 +233,7 @@
       "main": [
         [
           {
-            "node": "Conversational Logic LLM",
+            "node": "AI Agent",
             "type": "main",
             "index": 0
           }
@@ -240,7 +244,7 @@
       "ai_memory": [
         [
           {
-            "node": "Conversational Logic LLM",
+            "node": "AI Agent",
             "type": "ai_memory",
             "index": 0
           }
@@ -251,30 +255,8 @@
       "ai_languageModel": [
         [
           {
-            "node": "Conversational Logic LLM",
+            "node": "AI Agent",
             "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Google Gemini (Format DB)": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Format DB Result",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Conversational Logic LLM": {
-      "main": [
-        [
-          {
-            "node": "Parse JSON Output",
-            "type": "main",
             "index": 0
           }
         ]
@@ -338,6 +320,17 @@
         ]
       ]
     },
+    "Google Gemini (Format DB)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Format DB Result",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Format DB Result": {
       "main": [
         [
@@ -354,6 +347,17 @@
         [
           {
             "node": "Format Save Output UI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse JSON Output",
             "type": "main",
             "index": 0
           }
