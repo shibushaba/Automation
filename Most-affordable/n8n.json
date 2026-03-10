@@ -4,13 +4,13 @@
       "parameters": {
         "options": {}
       },
-      "id": "b8d84ed3-d7a1-4ddd-a01e-66623c05aeff",
+      "id": "b8990457-55f2-45a4-86d2-2a72bf52f6dc",
       "name": "Chat Trigger",
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
       "typeVersion": 1,
       "position": [
-        3568,
-        2192
+        2704,
+        2224
       ],
       "webhookId": "ddf8efbd-5544-4164-ae2b-a9f4d5ccac13"
     },
@@ -18,26 +18,26 @@
       "parameters": {
         "sessionKey": "={{ $sessionId }}"
       },
-      "id": "02097de9-a63e-42c3-820d-307ded6d2988",
+      "id": "603772bc-6c86-4c43-81d9-dbbd175d1e6e",
       "name": "Window Buffer Memory",
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1,
       "position": [
-        3968,
-        2384
+        3104,
+        2416
       ]
     },
     {
       "parameters": {
         "options": {}
       },
-      "id": "bdbc465a-2a6e-4256-b4bb-58e431105536",
+      "id": "33f2a6ba-525d-4484-80b0-27facfe991cd",
       "name": "Google Gemini Chat Model",
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
       "position": [
-        3872,
-        2384
+        3008,
+        2416
       ],
       "credentials": {
         "googlePalmApi": {
@@ -57,23 +57,23 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.6,
       "position": [
-        3872,
-        2192
+        3008,
+        2224
       ],
-      "id": "3acbcba7-eccc-41e6-989f-446a8cb38c49",
+      "id": "f0edb525-52a6-4d59-8395-4e71836e99e4",
       "name": "AI Agent"
     },
     {
       "parameters": {
         "jsCode": "try {\n  let str = $input.item.json.output || $input.item.json.text || $input.item.json.response || '';\n  str = str.replace(/```json/ig, '').replace(/```/g, '').trim();\n  const parsed = JSON.parse(str);\n  return [parsed];\n} catch(e) {\n  return [{ reply_to_user: \"I'm sorry, I misunderstood. Could you rephrase that?\", action: \"none\", action_param: \"\" }];\n}"
       },
-      "id": "c8aaf685-b7d6-41bc-88f9-f7a7f1f9712b",
+      "id": "e0f096b4-609b-4ae8-be2a-20eb40a3d8ab",
       "name": "Parse JSON Output",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4176,
-        2192
+        3312,
+        2224
       ]
     },
     {
@@ -104,10 +104,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        4368,
-        2192
+        3504,
+        2224
       ],
-      "id": "e90a3a83-7277-4756-96cf-ea32bc402f6e",
+      "id": "6523be8c-5fa1-440c-a21d-899132d92be2",
       "name": "If Search DB"
     },
     {
@@ -138,10 +138,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        4592,
-        2480
+        3728,
+        2512
       ],
-      "id": "8acf6a9b-6339-435a-8276-bbbc4022b86b",
+      "id": "7506401a-4f1c-4dc2-82e5-6bdbe927eb1e",
       "name": "If Save Request"
     },
     {
@@ -159,13 +159,13 @@
           ]
         }
       },
-      "id": "babc0372-060a-4fdf-9674-7d748830db81",
+      "id": "68bc7aa9-13f9-42c4-b4cf-6c1253e8c17d",
       "name": "Supabase Fetch",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        4576,
-        2000
+        3712,
+        2032
       ],
       "alwaysOutputData": true,
       "credentials": {
@@ -179,13 +179,13 @@
       "parameters": {
         "options": {}
       },
-      "id": "d20e3068-bdaf-42b3-8141-431490707415",
+      "id": "ef4e9a98-a2e5-42b3-b956-b859def1026c",
       "name": "Google Gemini (Format DB)",
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
       "position": [
-        4752,
-        2176
+        3888,
+        2208
       ],
       "credentials": {
         "googlePalmApi": {
@@ -198,26 +198,26 @@
       "parameters": {
         "prompt": "=System:\nYou are a classic AI assistant for a premium bike dealership. Use max ONE emoji.\nIf Database Result contains an available bike:\nList its details EXACTLY in this format:\nBrand : [Make]\nModel : [Model]\nPrice : ₹[Price]\nColor : [Color]\nYear : [Year]\nKM : [KM]\nThen, politely provide the direct website link to view photos: https://most-affordable.vercel.app/bike/[THE_BIKE_ID].\n\nIf Database Result is empty or the bike is SOLD:\nApologize politely, explain it is not available, and invite them to browse vehicles on https://most-affordable.vercel.app/.\n======\nDatabase Search Result: {{ JSON.stringify($json) }}"
       },
-      "id": "803bc10e-1810-4950-a4e2-838fc5f89ff5",
+      "id": "7cf2cdf2-06ef-4f54-9a4b-932e1a598758",
       "name": "Format DB Result",
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1,
       "position": [
-        4752,
-        2000
+        3888,
+        2032
       ]
     },
     {
       "parameters": {
         "jsCode": "return { output: $input.item.json.text || $input.item.json.output || 'Processing Error: AI did not return text.' };"
       },
-      "id": "e01653ca-b798-4184-8bbd-76d7c94732b4",
+      "id": "8868fe39-5d1c-467f-b17c-891afce6a8c1",
       "name": "Format DB Output UI",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        5088,
-        2000
+        4224,
+        2032
       ]
     },
     {
@@ -227,13 +227,13 @@
         "columns": "message",
         "message": "={{ $('Parse JSON Output').item.json.action_param }}"
       },
-      "id": "8c8dc276-19aa-4b74-a082-7f5aab75d1e5",
+      "id": "0a5852a7-5b00-4855-9ced-e4dfd0a6cd4b",
       "name": "Supabase Insert Request",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        4832,
-        2384
+        3968,
+        2416
       ],
       "credentials": {
         "supabaseApi": {
@@ -246,26 +246,26 @@
       "parameters": {
         "jsCode": "return { output: $('Parse JSON Output').item.json.reply_to_user || 'Your request has been successfully saved!' };"
       },
-      "id": "f0fd80ed-1613-4852-9900-b7e10b854acb",
+      "id": "7b7b9f14-8c75-4791-be3a-6c3d04174bd3",
       "name": "Format Save Output UI",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        5040,
-        2384
+        4176,
+        2416
       ]
     },
     {
       "parameters": {
         "jsCode": "return { output: $('Parse JSON Output').item.json.reply_to_user || 'Something went wrong.' };"
       },
-      "id": "1fc0b36e-cb2f-42b1-8504-cfc6ad72bc54",
+      "id": "f72f21d7-653b-4665-a01a-e416cc2eae2f",
       "name": "Format Normal Output UI",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4832,
-        2592
+        3968,
+        2624
       ]
     }
   ],
