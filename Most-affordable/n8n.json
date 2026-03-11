@@ -2,54 +2,21 @@
   "nodes": [
     {
       "parameters": {
-        "options": {}
-      },
-      "id": "b8990457-55f2-45a4-86d2-2a72bf52f6dc",
-      "name": "Chat Trigger",
-      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
-      "typeVersion": 1,
-      "position": [
-        2704,
-        2224
-      ],
-      "webhookId": "ddf8efbd-5544-4164-ae2b-a9f4d5ccac13"
-    },
-    {
-      "parameters": {
         "sessionKey": "={{ $sessionId }}"
       },
-      "id": "603772bc-6c86-4c43-81d9-dbbd175d1e6e",
-      "name": "Window Buffer Memory",
+      "id": "e7b411c8-1389-4264-90d5-e9165cc85845",
+      "name": "Window Buffer Memory1",
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1,
       "position": [
-        3104,
-        2416
+        608,
+        1872
       ]
     },
     {
       "parameters": {
-        "options": {}
-      },
-      "id": "33f2a6ba-525d-4484-80b0-27facfe991cd",
-      "name": "Google Gemini Chat Model",
-      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-      "typeVersion": 1,
-      "position": [
-        3008,
-        2416
-      ],
-      "credentials": {
-        "googlePalmApi": {
-          "id": "M8x78S7HaYYge2Lz",
-          "name": "Google Gemini(PaLM) Api account 3"
-        }
-      }
-    },
-    {
-      "parameters": {
         "promptType": "define",
-        "text": "={{ $json.chatInput }}",
+        "text": "={{ $json.aiInput }}",
         "options": {
           "systemMessage": "System:\nYou are a classic and standard AI assistant for a premium bike dealership. You maintain conversation with the user to help them find a bike.\nYour goal is to either find a specific bike by ID (e.g. BK-1) OR save a general request (e.g. 'Himalayan 450') if they don't have an ID.\n\nCRITICAL PROCESS FOR SAVING REQUESTS:\n1. If a user asks for a general bike (e.g. 'Is a Himalayan available?'), you MUST first ask them for their phone number to reach them at.\n2. Once they provide their phone number, you MUST ask for final confirmation (e.g. 'You need a Himalayan 450 and your number is 9876543210, is this correct?').\n3. ONLY save the request when they explicitly say yes/confirm.\n\nYou MUST ALWAYS and ONLY respond with a valid JSON object in this exact format. No markdown, no backticks, no other text:\n{\n  \"reply_to_user\": \"Your conversational reply here\",\n  \"action\": \"none\" | \"search_db\" | \"save_request\",\n  \"action_param\": \"bike_id or formatted_request_string\"\n}\n\nRules:\n- If user provides a bike ID (e.g. BK-123), set action to 'search_db', action_param to 'BK-123', reply_to_user to 'Searching'.\n- If user confirms a general request with their number, set action to 'save_request', action_param to EXACTLY '[Bike Name] - Ph: [Phone Number]', reply_to_user to 'Your request for a [Bike] has been saved and our dealership team will reach out to you shortly!'\n- Otherwise, set action to 'none', action_param to '', and set reply_to_user to your conversational response (e.g. asking for the phone number, confirming the details). Use max ONE emoji total."
         }
@@ -57,23 +24,23 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.6,
       "position": [
-        3008,
-        2224
+        512,
+        1680
       ],
-      "id": "f0edb525-52a6-4d59-8395-4e71836e99e4",
-      "name": "AI Agent"
+      "id": "5087c2c8-e95f-47d5-94a2-a2afb1c7eafc",
+      "name": "AI Agent1"
     },
     {
       "parameters": {
         "jsCode": "try {\n  let str = $input.item.json.output || $input.item.json.text || $input.item.json.response || '';\n  str = str.replace(/```json/ig, '').replace(/```/g, '').trim();\n  const parsed = JSON.parse(str);\n  return [parsed];\n} catch(e) {\n  return [{ reply_to_user: \"I'm sorry, I misunderstood. Could you rephrase that?\", action: \"none\", action_param: \"\" }];\n}"
       },
-      "id": "e0f096b4-609b-4ae8-be2a-20eb40a3d8ab",
-      "name": "Parse JSON Output",
+      "id": "c81ff627-7b8a-4029-90a4-070412de096e",
+      "name": "Parse JSON Output1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3312,
-        2224
+        816,
+        1680
       ]
     },
     {
@@ -104,11 +71,11 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        3504,
-        2224
+        1008,
+        1680
       ],
-      "id": "6523be8c-5fa1-440c-a21d-899132d92be2",
-      "name": "If Search DB"
+      "id": "041e4f81-ebee-4016-b044-5b71615f91e8",
+      "name": "If Search DB1"
     },
     {
       "parameters": {
@@ -138,11 +105,11 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        3728,
-        2512
+        1232,
+        1968
       ],
-      "id": "7506401a-4f1c-4dc2-82e5-6bdbe927eb1e",
-      "name": "If Save Request"
+      "id": "23e237bf-1df2-4743-a0fa-37901f88556f",
+      "name": "If Save Request1"
     },
     {
       "parameters": {
@@ -154,18 +121,18 @@
             {
               "keyName": "id",
               "condition": "eq",
-              "keyValue": "={{ $('Parse JSON Output').item.json.action_param }}"
+              "keyValue": "={{ $('Parse JSON Output1').item.json.action_param }}"
             }
           ]
         }
       },
-      "id": "68bc7aa9-13f9-42c4-b4cf-6c1253e8c17d",
-      "name": "Supabase Fetch",
+      "id": "25fd4f41-5cb9-4510-a414-5f65648c30d1",
+      "name": "Supabase Fetch1",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        3712,
-        2032
+        1216,
+        1488
       ],
       "alwaysOutputData": true,
       "credentials": {
@@ -179,13 +146,13 @@
       "parameters": {
         "options": {}
       },
-      "id": "ef4e9a98-a2e5-42b3-b956-b859def1026c",
-      "name": "Google Gemini (Format DB)",
+      "id": "941f596d-1c6b-4918-a8e6-886fb7d5ec0c",
+      "name": "Google Gemini (Format DB)1",
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
       "position": [
-        3888,
-        2208
+        1392,
+        1664
       ],
       "credentials": {
         "googlePalmApi": {
@@ -198,42 +165,47 @@
       "parameters": {
         "prompt": "=System:\nYou are a classic AI assistant for a premium bike dealership. Use max ONE emoji.\nIf Database Result contains an available bike:\nList its details EXACTLY in this format:\nBrand : [Make]\nModel : [Model]\nPrice : ₹[Price]\nColor : [Color]\nYear : [Year]\nKM : [KM]\nThen, politely provide the direct website link to view photos: https://most-affordable.vercel.app/bike/[THE_BIKE_ID].\n\nIf Database Result is empty or the bike is SOLD:\nApologize politely, explain it is not available, and invite them to browse vehicles on https://most-affordable.vercel.app/.\n======\nDatabase Search Result: {{ JSON.stringify($json) }}"
       },
-      "id": "7cf2cdf2-06ef-4f54-9a4b-932e1a598758",
-      "name": "Format DB Result",
+      "id": "c5e5fffd-8c0c-4539-818e-872b121bdf14",
+      "name": "Format DB Result1",
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1,
       "position": [
-        3888,
-        2032
+        1392,
+        1488
       ]
     },
     {
       "parameters": {
         "jsCode": "return { output: $input.item.json.text || $input.item.json.output || 'Processing Error: AI did not return text.' };"
       },
-      "id": "8868fe39-5d1c-467f-b17c-891afce6a8c1",
-      "name": "Format DB Output UI",
+      "id": "24e3656b-7b7e-4239-93ed-bfa8aa8292af",
+      "name": "Format DB Output UI1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4224,
-        2032
+        1728,
+        1488
       ]
     },
     {
       "parameters": {
-        "operation": "insert",
         "tableId": "requests",
-        "columns": "message",
-        "message": "={{ $('Parse JSON Output').item.json.action_param }}"
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "message",
+              "fieldValue": "={{ $json.action_param }}"
+            }
+          ]
+        }
       },
-      "id": "0a5852a7-5b00-4855-9ced-e4dfd0a6cd4b",
-      "name": "Supabase Insert Request",
+      "id": "ff8e2b8f-359d-4bd0-ad1c-50c1dd495f9f",
+      "name": "Supabase Insert Request1",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        3968,
-        2416
+        1472,
+        1872
       ],
       "credentials": {
         "supabaseApi": {
@@ -244,161 +216,310 @@
     },
     {
       "parameters": {
-        "jsCode": "return { output: $('Parse JSON Output').item.json.reply_to_user || 'Your request has been successfully saved!' };"
+        "jsCode": "return { output: $('Parse JSON Output1').item.json.reply_to_user || 'Your request has been successfully saved!' };"
       },
-      "id": "7b7b9f14-8c75-4791-be3a-6c3d04174bd3",
-      "name": "Format Save Output UI",
+      "id": "5cb560bf-d5bb-4c74-816e-396f4f4fdedc",
+      "name": "Format Save Output UI1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4176,
-        2416
+        1680,
+        1872
       ]
     },
     {
       "parameters": {
-        "jsCode": "return { output: $('Parse JSON Output').item.json.reply_to_user || 'Something went wrong.' };"
+        "jsCode": "return { output: $('Parse JSON Output1').item.json.reply_to_user || 'Something went wrong.' };"
       },
-      "id": "f72f21d7-653b-4665-a01a-e416cc2eae2f",
-      "name": "Format Normal Output UI",
+      "id": "12069204-c909-4ed4-b755-f724deefd460",
+      "name": "Format Normal Output UI1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3968,
-        2624
+        1472,
+        2080
       ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        512,
+        1872
+      ],
+      "id": "5baabe15-329d-4b9f-a0bc-48ca105b0282",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "M8x78S7HaYYge2Lz",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.instagram.com/v25.0/{{ $('When Executed by Another Workflow').item.json.body.entry[0].messaging[0].recipient.id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer IGAANa0RPdJZCZABZAFoxdUIzSjUzSnZAFYk54UTQ0LVRNSGtubHZAEajJFejR3ZAUNDTmQ2ZA2tfazJwZAjg3U0ZALM2huUEZABb0NOejJJT1pKcTF3TmVuVHpXLVJ5VWFzNTl3UkZAUTjlxQmdNZADdQTHhsOEtpN1ZAzZA2RaRFBlc05HUXBDTQZDZD"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  \"recipient\": {\n    \"id\": $('When Executed by Another Workflow').item.json.body.entry[0].messaging[0].sender.id\n  },\n  \"message\": {\n    \"text\": $json.output\n  }\n}\n}}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2112,
+        1872
+      ],
+      "id": "55d925ce-79df-4c34-b34f-0ba618e17345",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"type\": \"DM\",\n  \"aiInput\": \"{{$json.body.entry[0].messaging[0].message.text}}\",\n  \"senderId\": \"{{$json.body.entry[0].messaging[0].sender.id}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        256,
+        1680
+      ],
+      "id": "093639dd-169f-4b8a-bbae-4e8695328162",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 3,
+        "output": "={{\n  $json.body.entry?.[0]?.changes?.[0]?.field === \"comments\"\n    ? 0\n    : (\n        $json.body.entry?.[0]?.messaging?.[0]?.message?.text &&\n        !$json.body.entry?.[0]?.messaging?.[0]?.message?.is_echo\n      )\n      ? 1\n      : 2\n}}"
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -160,
+        1664
+      ],
+      "id": "8413cbf8-24ac-456b-9e07-8382b49581f7",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -336,
+        1680
+      ],
+      "id": "d9f5f24e-c2c9-4b40-95dd-b6485f8ea78c",
+      "name": "When Executed by Another Workflow"
     }
   ],
   "connections": {
-    "Chat Trigger": {
-      "main": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Window Buffer Memory": {
+    "Window Buffer Memory1": {
       "ai_memory": [
         [
           {
-            "node": "AI Agent",
+            "node": "AI Agent1",
             "type": "ai_memory",
             "index": 0
           }
         ]
       ]
     },
-    "Google Gemini Chat Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "AI Agent": {
+    "AI Agent1": {
       "main": [
         [
           {
-            "node": "Parse JSON Output",
+            "node": "Parse JSON Output1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Parse JSON Output": {
+    "Parse JSON Output1": {
       "main": [
         [
           {
-            "node": "If Search DB",
+            "node": "If Search DB1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "If Search DB": {
+    "If Search DB1": {
       "main": [
         [
           {
-            "node": "Supabase Fetch",
+            "node": "Supabase Fetch1",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "If Save Request",
+            "node": "If Save Request1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "If Save Request": {
+    "If Save Request1": {
       "main": [
         [
           {
-            "node": "Supabase Insert Request",
+            "node": "Supabase Insert Request1",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Format Normal Output UI",
+            "node": "Format Normal Output UI1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Supabase Fetch": {
+    "Supabase Fetch1": {
       "main": [
         [
           {
-            "node": "Format DB Result",
+            "node": "Format DB Result1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Google Gemini (Format DB)": {
+    "Google Gemini (Format DB)1": {
       "ai_languageModel": [
         [
           {
-            "node": "Format DB Result",
+            "node": "Format DB Result1",
             "type": "ai_languageModel",
             "index": 0
           }
         ]
       ]
     },
-    "Format DB Result": {
+    "Format DB Result1": {
       "main": [
         [
           {
-            "node": "Format DB Output UI",
+            "node": "Format DB Output UI1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Supabase Insert Request": {
+    "Format DB Output UI1": {
       "main": [
         [
           {
-            "node": "Format Save Output UI",
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Insert Request1": {
+      "main": [
+        [
+          {
+            "node": "Format Save Output UI1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Save Output UI1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Normal Output UI1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Switch",
             "type": "main",
             "index": 0
           }
