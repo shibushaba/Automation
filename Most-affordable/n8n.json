@@ -8,10 +8,7 @@
       "name": "Window Buffer Memory1",
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1,
-      "position": [
-        608,
-        1872
-      ]
+      "position": [608, 1872]
     },
     {
       "parameters": {
@@ -23,10 +20,7 @@
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.6,
-      "position": [
-        512,
-        1680
-      ],
+      "position": [512, 1680],
       "id": "5087c2c8-e95f-47d5-94a2-a2afb1c7eafc",
       "name": "AI Agent1"
     },
@@ -38,10 +32,7 @@
       "name": "Parse JSON Output1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        816,
-        1680
-      ]
+      "position": [816, 1680]
     },
     {
       "parameters": {
@@ -70,10 +61,7 @@
       },
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
-      "position": [
-        1008,
-        1680
-      ],
+      "position": [1008, 1680],
       "id": "041e4f81-ebee-4016-b044-5b71615f91e8",
       "name": "If Search DB1"
     },
@@ -104,10 +92,7 @@
       },
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
-      "position": [
-        1232,
-        1968
-      ],
+      "position": [1232, 1968],
       "id": "23e237bf-1df2-4743-a0fa-37901f88556f",
       "name": "If Save Request1"
     },
@@ -130,10 +115,7 @@
       "name": "Supabase Fetch1",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
-      "position": [
-        1216,
-        1488
-      ],
+      "position": [1216, 1488],
       "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
@@ -150,10 +132,7 @@
       "name": "Google Gemini (Format DB)1",
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
-      "position": [
-        1392,
-        1664
-      ],
+      "position": [1392, 1664],
       "credentials": {
         "googlePalmApi": {
           "id": "M8x78S7HaYYge2Lz",
@@ -163,16 +142,13 @@
     },
     {
       "parameters": {
-        "prompt": "=System:\nYou are a classic AI assistant for a premium bike dealership. Use max ONE emoji.\nIf Database Result contains an available bike:\nList its details EXACTLY in this format:\nBrand : [Make]\nModel : [Model]\nPrice : ₹[Price]\nColor : [Color]\nYear : [Year]\nKM : [KM]\nThen, politely provide the direct website link to view photos: https://most-affordable.vercel.app/bike/[THE_BIKE_ID].\n\nIf Database Result is empty or the bike is SOLD:\nApologize politely, explain it is not available, and invite them to browse vehicles on https://most-affordable.vercel.app/.\n======\nDatabase Search Result: {{ JSON.stringify($json) }}"
+        "prompt": "=System:\nYou are a classic AI assistant for a premium bike dealership. Use max ONE emoji.\nIf Database Result contains an available bike:\nList its details EXACTLY in this format:\nBrand : [Make]\nModel : [Model]\nPrice : ₹[Price]\nColor : [Color]\nYear : [Year]\nKM : [KM]\nThen, politely provide the direct website link to view photos: https://most-affordable.vercel.app/bike/[THE_BIKE_ID].\nEnd your message with: 'Checkout our website for more details and to request vehicles: https://most-affordable.vercel.app/'\n\nIf Database Result is empty or the bike is SOLD:\nApologize politely, explain it is not available, and invite them to browse vehicles on https://most-affordable.vercel.app/.\n======\nDatabase Search Result: {{ JSON.stringify($json) }}"
       },
       "id": "c5e5fffd-8c0c-4539-818e-872b121bdf14",
       "name": "Format DB Result1",
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1,
-      "position": [
-        1392,
-        1488
-      ]
+      "position": [1392, 1488]
     },
     {
       "parameters": {
@@ -182,10 +158,7 @@
       "name": "Format DB Output UI1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1728,
-        1488
-      ]
+      "position": [1728, 1488]
     },
     {
       "parameters": {
@@ -227,10 +200,7 @@
       "name": "Supabase Insert Request1",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
-      "position": [
-        1472,
-        1872
-      ],
+      "position": [1472, 1872],
       "credentials": {
         "supabaseApi": {
           "id": "vNTP1XgP3wsW0tiM",
@@ -240,16 +210,13 @@
     },
     {
       "parameters": {
-        "jsCode": "return { output: $('Parse JSON Output1').item.json.reply_to_user || 'Your request has been successfully saved!' };"
+        "jsCode": "const reply = $('Parse JSON Output1').item.json.reply_to_user || 'Your request has been saved!';\nreturn { output: reply + '\\n\\n✅ Checkout our website for more details and to request vehicles:\\nhttps://most-affordable.vercel.app/' };"
       },
       "id": "5cb560bf-d5bb-4c74-816e-396f4f4fdedc",
       "name": "Format Save Output UI1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1680,
-        1872
-      ]
+      "position": [1680, 1872]
     },
     {
       "parameters": {
@@ -259,10 +226,7 @@
       "name": "Format Normal Output UI1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1472,
-        2080
-      ]
+      "position": [1472, 2080]
     },
     {
       "parameters": {
@@ -270,10 +234,7 @@
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
-      "position": [
-        512,
-        1872
-      ],
+      "position": [512, 1872],
       "id": "5baabe15-329d-4b9f-a0bc-48ca105b0282",
       "name": "Google Gemini Chat Model1",
       "credentials": {
@@ -307,10 +268,7 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
-      "position": [
-        2112,
-        1872
-      ],
+      "position": [2112, 1800],
       "id": "55d925ce-79df-4c34-b34f-0ba618e17345",
       "name": "HTTP Request1"
     },
@@ -322,10 +280,7 @@
       },
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [
-        256,
-        1680
-      ],
+      "position": [256, 1680],
       "id": "093639dd-169f-4b8a-bbae-4e8695328162",
       "name": "Edit Fields"
     },
@@ -337,10 +292,7 @@
       },
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
-      "position": [
-        16,
-        1664
-      ],
+      "position": [16, 1664],
       "id": "8413cbf8-24ac-456b-9e07-8382b49581f7",
       "name": "Switch"
     },
@@ -350,12 +302,174 @@
       },
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
-      "position": [
-        -160,
-        1680
-      ],
+      "position": [-160, 1680],
       "id": "d9f5f24e-c2c9-4b40-95dd-b6485f8ea78c",
       "name": "When Executed by Another Workflow"
+    },
+
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "id"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "sender_id",
+              "lookupValue": "={{ $json.senderId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "gs-read-user-001",
+      "name": "Sheets - Read User",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [448, 1680],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GSHEETS_CREDENTIAL_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let sheetRow = {};\ntry { sheetRow = $input.item.json || {}; } catch(e) {}\n\nconst senderId = $('Edit Fields').item.json.senderId;\nconst rawMsg = $('Edit Fields').item.json.aiInput;\nconst isDone = sheetRow.status === 'done';\n\nlet aiInput = rawMsg;\nif (sheetRow.sender_id && !isDone) {\n  let ctx = '';\n  if (sheetRow.bike_searched) ctx += `User previously searched for bike: ${sheetRow.bike_searched}. `;\n  if (sheetRow.bike_requested) ctx += `User previously requested bike: ${sheetRow.bike_requested}. `;\n  if (ctx) aiInput = `[Context: ${ctx}]\\nUser message: ${rawMsg}`;\n}\n\nreturn [{ senderId, aiInput, isDone: isDone.toString(), sheetRow }];"
+      },
+      "id": "gs-build-ctx-001",
+      "name": "Build AI Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [656, 1680]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "done-001",
+              "leftValue": "={{ $json.isDone }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "gs-if-done-001",
+      "name": "Is Bot Done?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [864, 1680]
+    },
+    {
+      "parameters": {
+        "jsCode": "return { output: '✅ Your request was already handled!\\n\\nCheckout our website for more details and to browse all bikes or request a vehicle:\\nhttps://most-affordable.vercel.app/' };"
+      },
+      "id": "gs-done-msg-001",
+      "name": "Send Website Msg (Done)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [864, 1488]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "sender_id": "={{ $('Edit Fields').item.json.senderId }}",
+            "status": "done",
+            "bike_searched": "={{ $('Parse JSON Output1').item.json.action_param }}",
+            "source": "insta",
+            "timestamp": "={{ new Date().toISOString() }}"
+          }
+        },
+        "matchingColumns": ["sender_id"],
+        "options": {}
+      },
+      "id": "gs-write-bike-001",
+      "name": "Sheets - Write Bike Found",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [1920, 1488],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GSHEETS_CREDENTIAL_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "sender_id": "={{ $('Edit Fields').item.json.senderId }}",
+            "status": "done",
+            "bike_requested": "={{ $('Parse JSON Output1').item.json.action_param.split(' - Ph:')[0].trim() }}",
+            "contact": "={{ ($('Parse JSON Output1').item.json.action_param.split('Ph:')[1] || '').trim() }}",
+            "source": "insta",
+            "timestamp": "={{ new Date().toISOString() }}"
+          }
+        },
+        "matchingColumns": ["sender_id"],
+        "options": {}
+      },
+      "id": "gs-write-req-001",
+      "name": "Sheets - Write Req Saved",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [1920, 1872],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GSHEETS_CREDENTIAL_ID",
+          "name": "Google Sheets account"
+        }
+      }
     }
   ],
   "connections": {
@@ -468,6 +582,11 @@
             "node": "HTTP Request1",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Sheets - Write Bike Found",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -488,6 +607,11 @@
         [
           {
             "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Sheets - Write Req Saved",
             "type": "main",
             "index": 0
           }
@@ -520,7 +644,58 @@
       "main": [
         [
           {
+            "node": "Sheets - Read User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheets - Read User": {
+      "main": [
+        [
+          {
+            "node": "Build AI Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build AI Context": {
+      "main": [
+        [
+          {
+            "node": "Is Bot Done?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Bot Done?": {
+      "main": [
+        [
+          {
+            "node": "Send Website Msg (Done)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
             "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Website Msg (Done)": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
             "type": "main",
             "index": 0
           }
