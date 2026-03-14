@@ -24,8 +24,7 @@ const AdminRequests = ({ isAdmin }) => {
         .order('created_at', { ascending: false });
         
       if (error) {
-        // Failing silently mostly, since table might not exist yet if user didn't run SQL
-        console.error('Error fetching requests (Table might not exist yet):', error.message);
+        console.error('Error fetching requests:', error.message);
       } else {
         setRequests(data || []);
       }
@@ -36,16 +35,27 @@ const AdminRequests = ({ isAdmin }) => {
     }
   };
 
+  const markSeen = async (id) => {
+    try {
+      const { error } = await supabase
+        .from('requests')
+        .update({ seen: true })
+        .eq('id', id);
+      if (error) throw error;
+      setRequests(requests.map(req => req.id === id ? { ...req, seen: true } : req));
+    } catch (error) {
+      console.error('Failed to mark as seen:', error);
+    }
+  };
+
   const markResolved = async (id) => {
     try {
       const { error } = await supabase
         .from('requests')
-        .update({ status: 'resolved' })
+        .update({ status: 'resolved', seen: true })
         .eq('id', id);
-        
       if (error) throw error;
-      
-      setRequests(requests.map(req => req.id === id ? { ...req, status: 'resolved' } : req));
+      setRequests(requests.map(req => req.id === id ? { ...req, status: 'resolved', seen: true } : req));
     } catch (error) {
       alert('Failed to update request status.');
       console.error(error);
@@ -53,7 +63,7 @@ const AdminRequests = ({ isAdmin }) => {
   };
 
   const deleteRequest = async (id) => {
-    if(!window.confirm('Delete this request entirely?')) return;
+    if (!window.confirm('Delete this request entirely?')) return;
     try {
       const { error } = await supabase.from('requests').delete().eq('id', id);
       if (error) throw error;
@@ -62,26 +72,38 @@ const AdminRequests = ({ isAdmin }) => {
       alert('Failed to delete request.');
       console.error(error);
     }
-  }
+  };
 
-  if (loading) return <div className="loading" style={{textAlign: 'center', marginTop: '40px'}}>Loading Inbox...</div>;
+  if (loading) return <div className="loading" style={{ textAlign: 'center', marginTop: '40px' }}>Loading Inbox...</div>;
+
+  const unseenCount = requests.filter(r => !r.seen).length;
 
   return (
     <div className="admin-dashboard fade-in">
       <div className="admin-header-stacked">
-        <h1>Requests Inbox</h1>
-        <p className="admin-subtitle">General chatbot inquiries and unmatched requests.</p>
-        <button className="back-btn" onClick={() => navigate('/admin/dashboard')} style={{marginTop: '20px'}}>
+        <h1>
+          Requests Inbox
+          {unseenCount > 0 && (
+            <span className="badge-count" style={{ marginLeft: '12px', fontSize: '1rem', width: '28px', height: '28px' }}>
+              {unseenCount}
+            </span>
+          )}
+        </h1>
+        <p className="admin-subtitle">Bike requests from Instagram DMs and website form.</p>
+        <button className="back-btn" onClick={() => navigate('/admin/dashboard')} style={{ marginTop: '20px' }}>
           &larr; Back to Dashboard
         </button>
       </div>
 
-      <div className="admin-table-container glass-panel" style={{marginTop: '40px'}}>
+      <div className="admin-table-container glass-panel" style={{ marginTop: '40px' }}>
         <table className="admin-table">
           <thead>
             <tr>
               <th>Date</th>
-              <th>Customer Message</th>
+              <th>Bike Name</th>
+              <th>Customer</th>
+              <th>Contact</th>
+              <th>Source</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -89,17 +111,39 @@ const AdminRequests = ({ isAdmin }) => {
           <tbody>
             {requests.map(req => (
               <tr key={req.id} className={req.status === 'resolved' ? 'row-sold' : ''}>
-                <td data-label="Date">{new Date(req.created_at).toLocaleString()}</td>
-                <td data-label="Message" style={{maxWidth: '400px', whiteSpace: 'normal', wordWrap: 'break-word'}}>"{req.message}"</td>
+                <td data-label="Date" style={{ whiteSpace: 'nowrap' }}>
+                  {!req.seen && <span className="unseen-dot" title="New / unseen"></span>}
+                  {new Date(req.created_at).toLocaleDateString()}
+                </td>
+                <td data-label="Bike Name">
+                  <strong>{req.bike_name || req.message || '—'}</strong>
+                </td>
+                <td data-label="Customer">
+                  {req.customer_name || req.instagram_id || '—'}
+                </td>
+                <td data-label="Contact">
+                  {req.contact || '—'}
+                </td>
+                <td data-label="Source">
+                  {req.source === 'web'
+                    ? <span className="source-label source-web">WEB</span>
+                    : <span className="source-label source-insta">INSTA</span>
+                  }
+                </td>
                 <td data-label="Status">
                   <span className={`status-badge ${req.status === 'resolved' ? 'status-sold' : 'status-available'}`}>
-                    {req.status.toUpperCase()}
+                    {(req.status || 'pending').toUpperCase()}
                   </span>
                 </td>
                 <td data-label="Actions" className="actions-cell">
-                  {req.status === 'unread' && (
+                  {!req.seen && (
+                    <button onClick={() => markSeen(req.id)} className="action-btn toggle-btn">
+                      Mark Seen
+                    </button>
+                  )}
+                  {req.status !== 'resolved' && (
                     <button onClick={() => markResolved(req.id)} className="action-btn toggle-btn">
-                      Mark Resolved
+                      Resolve
                     </button>
                   )}
                   <button onClick={() => deleteRequest(req.id)} className="action-btn delete-btn">
@@ -110,8 +154,8 @@ const AdminRequests = ({ isAdmin }) => {
             ))}
             {requests.length === 0 && (
               <tr>
-                <td colSpan="4" style={{ textAlign: 'center', padding: '2rem' }}>
-                  No unmet requests right now. The database table might be empty or you still need to run the Phase 19 SQL script!
+                <td colSpan="7" style={{ textAlign: 'center', padding: '2rem' }}>
+                  No requests yet. They'll appear here when customers submit them via Instagram or the website.
                 </td>
               </tr>
             )}

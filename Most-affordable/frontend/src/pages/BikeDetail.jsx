@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
-import { ArrowLeft, MessageCircle } from 'lucide-react';
+import { ArrowLeft, MessageCircle, X } from 'lucide-react';
 
 export default function BikeDetail() {
   const { id } = useParams();
   const [bike, setBike] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedImageIdx, setSelectedImageIdx] = useState(0);
+  const [fullscreen, setFullscreen] = useState(false);
 
   useEffect(() => {
     async function fetchBike() {
@@ -26,6 +27,13 @@ export default function BikeDetail() {
     }
     fetchBike();
   }, [id]);
+
+  // Close fullscreen on Escape key
+  useEffect(() => {
+    const handleKey = (e) => { if (e.key === 'Escape') setFullscreen(false); };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, []);
 
   if (loading) {
     return (
@@ -49,28 +57,48 @@ export default function BikeDetail() {
     );
   }
 
-  // Pre-fill a WhatsApp message
   const waMessage = encodeURIComponent(`Hi! Is ${bike.id} (${bike.year} ${bike.make} ${bike.model}) still available?`);
-  
   const images = bike.image_urls && bike.image_urls.length > 0 ? bike.image_urls : ['https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=1000&auto=format&fit=crop'];
   const mainImage = images[selectedImageIdx] || images[0];
 
   return (
     <div className="container page-wrapper">
+      {/* Fullscreen overlay */}
+      {fullscreen && (
+        <div className="fullscreen-overlay" onClick={() => setFullscreen(false)}>
+          <button
+            className="fullscreen-close"
+            onClick={(e) => { e.stopPropagation(); setFullscreen(false); }}
+            aria-label="Close fullscreen"
+          >
+            <X size={20} />
+          </button>
+          <img
+            src={mainImage}
+            alt={`${bike.make} ${bike.model} fullscreen`}
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
+
       <Link to="/" className="glass-btn" style={{ marginBottom: '32px' }}>
         <ArrowLeft size={16} /> Back to Inventory
       </Link>
       
       <div className="detail-layout">
         <div className="detail-gallery-column">
-          <div className="detail-img-section glass-panel">
+          <div
+            className="detail-img-section glass-panel"
+            title="Tap to view fullscreen"
+            onClick={() => setFullscreen(true)}
+          >
             <img src={mainImage} alt={`${bike.make} ${bike.model}`} />
           </div>
           {images.length > 1 && (
             <div className="thumbnail-gallery">
               {images.map((img, idx) => (
-                <div 
-                  key={idx} 
+                <div
+                  key={idx}
                   className={`thumbnail ${idx === selectedImageIdx ? 'active' : ''}`}
                   onClick={() => setSelectedImageIdx(idx)}
                 >

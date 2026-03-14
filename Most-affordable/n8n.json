@@ -195,6 +195,30 @@
             {
               "fieldId": "message",
               "fieldValue": "={{ $json.action_param }}"
+            },
+            {
+              "fieldId": "instagram_id",
+              "fieldValue": "={{ $('When Executed by Another Workflow').item.json.body.entry[0].messaging[0].sender.id }}"
+            },
+            {
+              "fieldId": "session_id",
+              "fieldValue": "={{ $('When Executed by Another Workflow').item.json.body.entry[0].messaging[0].sender.id }}"
+            },
+            {
+              "fieldId": "source",
+              "fieldValue": "insta"
+            },
+            {
+              "fieldId": "seen",
+              "fieldValue": "=false"
+            },
+            {
+              "fieldId": "bike_name",
+              "fieldValue": "={{ $json.action_param.split(' - Ph:')[0].trim() }}"
+            },
+            {
+              "fieldId": "contact",
+              "fieldValue": "={{ ($json.action_param.split('Ph:')[1] || '').trim() }}"
             }
           ]
         }

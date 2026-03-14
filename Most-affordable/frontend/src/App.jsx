@@ -7,6 +7,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminAddBike from './pages/AdminAddBike';
 import AdminEditBike from './pages/AdminEditBike';
 import AdminRequests from './pages/AdminRequests';
+import BikeRequestForm from './pages/BikeRequestForm';
 import './App.css';
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
             </div>
             <nav className="nav-bottom">
               <Link to="/" className="nav-item">Inventory</Link>
+              <Link to="/request" className="nav-item">Request a Bike</Link>
               {isAdmin && (
                 <Link to="/admin/dashboard" className="nav-item">Dashboard</Link>
               )}
@@ -33,6 +35,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/bike/:id" element={<BikeDetail />} />
+            <Route path="/request" element={<BikeRequestForm />} />
             <Route path="/admin" element={<AdminLogin onLogin={setIsAdmin} />} />
             <Route path="/admin/dashboard" element={<AdminDashboard isAdmin={isAdmin} />} />
             <Route path="/admin/add" element={<AdminAddBike isAdmin={isAdmin} />} />
