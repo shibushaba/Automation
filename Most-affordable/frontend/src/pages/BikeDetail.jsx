@@ -108,7 +108,7 @@ export default function BikeDetail() {
             </div>
             {bike.km != null && (
               <div className="spec-item">
-                <span className="spec-label">Kilometers</span>
+                <span className="spec-label">Kilometers </span>
                 <span className="spec-value">{bike.km.toLocaleString('en-IN')} km</span>
               </div>
             )}
