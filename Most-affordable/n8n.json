@@ -314,7 +314,7 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
       "position": [
-        -160,
+        16,
         1664
       ],
       "id": "8413cbf8-24ac-456b-9e07-8382b49581f7",
@@ -327,7 +327,7 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        -336,
+        -160,
         1680
       ],
       "id": "d9f5f24e-c2c9-4b40-95dd-b6485f8ea78c",

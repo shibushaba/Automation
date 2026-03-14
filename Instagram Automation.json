@@ -1113,7 +1113,7 @@
       "parameters": {
         "mode": "expression",
         "numberOutputs": 2,
-        "output": "={{ \n$json.body.entry?.[0]?.changes?.[0]?.value?.metadata?.instagram_business_account_id === \"17841480583774715\" \n? 0 \n: 1 \n}}"
+        "output": "={{ $json.body.entry[0].id == \"17841480583774715\" ? 0 : 1 }}"
       },
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
@@ -1150,7 +1150,8 @@
         12016
       ],
       "id": "bd9d540a-abbe-4872-97aa-c2004239f4ab",
-      "name": "Call 'veetile_vandi'"
+      "name": "Call 'veetile_vandi'",
+      "disabled": true
     }
   ],
   "connections": {
