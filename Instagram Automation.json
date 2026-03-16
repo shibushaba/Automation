@@ -18,33 +18,33 @@
         },
         "options": {}
       },
-      "id": "0f281486-a3b9-406e-99f8-93a5c759e073",
-      "name": "Check DB",
+      "id": "2a7fa059-e1ac-40e8-ab53-18a661d50bcb",
+      "name": "Check DB1",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        20784,
-        12016
+        2032,
+        2336
       ],
       "alwaysOutputData": true,
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "2dvuvMpwQe7b0sGm",
+          "id": "BszyxYIl7V01jXJS",
           "name": "Google Sheets account"
         }
       }
     },
     {
       "parameters": {
-        "jsCode": "const dbItems = $input.all();\n\nlet name = 'missing';\nlet email = 'missing';\nlet phone = 'missing';\nlet requirement = 'missing';\n\nif (dbItems.length > 0 && dbItems[0].json) {\n  const data = dbItems[0].json;\n\n  name = data.NAME || 'missing';\n  email = data.EMAIL || 'missing';\n  phone = data.PHONE || 'missing';\n  requirement = data.REQUIRMENT || data.REQUIREMENT || 'missing';\n}\n\nconst aiInput = $('Edit Fields8').first().json.aiInput;\nconst senderId = $('Edit Fields8').first().json.senderId;\n\nconst memoryFlag = `Known lead info:\nName: ${name}\nEmail: ${email}\nPhone: ${phone}\nRequirement: ${requirement}`;\n\nreturn [\n  {\n    json: {\n      aiInput: aiInput,\n      sessionId: senderId,\n      memoryContext: memoryFlag\n    }\n  }\n];"
+        "jsCode": "const dbItems = $input.all();\n\nlet name = 'missing';\nlet email = 'missing';\nlet phone = 'missing';\nlet requirement = 'missing';\n\nconst aiInput = $('Edit Fields11').first().json.aiInput;\nconst senderId = $('Edit Fields11').first().json.senderId;\n\n// Find the row that matches the current sender's SESSION ID\nconst matchedRow = dbItems.find(item => {\n  const sessionId = String(item.json['SESSION ID'] || '').trim();\n  return sessionId === String(senderId).trim();\n});\n\nif (matchedRow) {\n  const data = matchedRow.json;\n  name = data.NAME || 'missing';\n  email = data.EMAIL || 'missing';\n  phone = data.PHONE || 'missing';\n  requirement = data.REQUIRMENT || data.REQUIREMENT || 'missing';\n}\n\nconst memoryFlag = `Known lead info:\\nName: ${name}\\nEmail: ${email}\\nPhone: ${phone}\\nRequirement: ${requirement}`;\n\nreturn [\n  {\n    json: {\n      aiInput: aiInput,\n      sessionId: senderId,\n      memoryContext: memoryFlag\n    }\n  }\n];"
       },
-      "id": "274e8e0b-91e3-442d-8454-413161536600",
-      "name": "Load Memory Context",
+      "id": "f00aa45d-e9f2-4a66-ae14-39f40fb5dbe8",
+      "name": "Load Memory Context1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        20944,
-        12016
+        2192,
+        2336
       ]
     },
     {
@@ -67,8 +67,8 @@
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "SENDER_ID": "={{ $('Webhook').item.json.body.entry[0].messaging[0].sender.id }}",
-            "PAGE_ID": "={{ $('Webhook').item.json.body.entry[0].messaging[0].recipient.id }}",
+            "SENDER_ID": "={{ $('Webhook1').item.json.body.entry[0].messaging[0].sender.id }}",
+            "PAGE_ID": "={{ $('Webhook1').item.json.body.entry[0].messaging[0].recipient.id }}",
             "TIMESTAMP": "={{ $now.toISO() }}",
             "FOLLOW_UP_SENT": "false"
           },
@@ -121,14 +121,14 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        21984,
-        12112
+        3232,
+        2432
       ],
-      "id": "88081826-bc56-4593-919f-14db278138d1",
-      "name": "Log to PendingFollowUps1",
+      "id": "702d0d2a-41b4-4fac-8bac-2c835b9eb934",
+      "name": "Log to PendingFollowUps",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "2dvuvMpwQe7b0sGm",
+          "id": "BszyxYIl7V01jXJS",
           "name": "Google Sheets account"
         }
       }
@@ -187,14 +187,14 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        22160,
-        11936
+        3408,
+        2256
       ],
-      "id": "0953f612-73bc-4411-9519-f5f6436b9805",
-      "name": "Mark CONVERTED1",
+      "id": "2a8b011f-6f5d-4e58-9806-6149eabb6c85",
+      "name": "Mark CONVERTED",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "2dvuvMpwQe7b0sGm",
+          "id": "BszyxYIl7V01jXJS",
           "name": "Google Sheets account"
         }
       }
@@ -209,11 +209,11 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        19968,
-        11696
+        1216,
+        2016
       ],
-      "id": "5a1a69a2-fae2-466e-a1c6-4bb945e919c7",
-      "name": "Webhook",
+      "id": "7b388702-a019-4787-881e-4e121fa0a653",
+      "name": "Webhook1",
       "webhookId": "c62c59d4-5f54-4d92-a587-bbc794113da2"
     },
     {
@@ -227,17 +227,17 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        21104,
-        12016
+        2352,
+        2336
       ],
-      "id": "5cd89613-07ab-41e8-a207-d11cb4546126",
-      "name": "AI Agent",
+      "id": "6ae031c5-4511-434d-9722-5f5101eed22c",
+      "name": "AI Agent1",
       "retryOnFail": true
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://graph.instagram.com/v25.0/{{ $('Webhook').item.json.body.entry[0].messaging[0].recipient.id }}/messages",
+        "url": "=https://graph.instagram.com/v25.0/{{ $('Webhook1').item.json.body.entry[0].messaging[0].recipient.id }}/messages",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -249,7 +249,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ {\n messaging_type: \"RESPONSE\",\n recipient: {\nid: $('Webhook').item.json.body.entry[0].messaging[0].sender.id\n },\nmessage: {\ntext: $json.output \n}\n} }}",
+        "jsonBody": "={{ {\n messaging_type: \"RESPONSE\",\n recipient: {\nid: $('Webhook1').item.json.body.entry[0].messaging[0].sender.id\n },\nmessage: {\ntext: $json.output \n}\n} }}",
         "options": {
           "redirect": {
             "redirect": {}
@@ -259,11 +259,11 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        21792,
-        12112
+        3040,
+        2432
       ],
-      "id": "38b9854b-e7c0-4a38-bbfc-2f46e238ba87",
-      "name": "HTTP Request"
+      "id": "2522f5e9-3b3f-444e-b7c7-c9ec4210fa31",
+      "name": "HTTP Request1"
     },
     {
       "parameters": {
@@ -274,11 +274,11 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        20656,
-        11616
+        1904,
+        1936
       ],
-      "id": "391c39aa-564f-4eae-b2dd-44fdbab65eda",
-      "name": "Respond to Webhook"
+      "id": "477566b2-5cb7-4254-91b5-05a8a40b48f8",
+      "name": "Respond to Webhook1"
     },
     {
       "parameters": {
@@ -316,11 +316,11 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        20448,
-        11632
+        1696,
+        1952
       ],
-      "id": "f33c9b11-576d-46b1-92c3-6ea73721e8e2",
-      "name": "If"
+      "id": "6da1ac3a-ecbd-4f65-8ae7-5c1d7b5643b2",
+      "name": "If1"
     },
     {
       "parameters": {
@@ -331,11 +331,11 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
       "position": [
-        20448,
-        11872
+        1696,
+        2192
       ],
-      "id": "8f7a74b5-5769-46e6-8ffb-8e72b4aba6cc",
-      "name": "Switch"
+      "id": "83877353-d85f-44ea-9895-0618aafbd520",
+      "name": "Switch2"
     },
     {
       "parameters": {
@@ -348,16 +348,16 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        20928,
-        11744
+        2176,
+        2064
       ],
-      "id": "8e935472-f8cc-44f7-b2b4-39dcbd6363dd",
-      "name": "AI Agent4"
+      "id": "2555dd9c-abf1-4699-acc2-a29fe6edfc57",
+      "name": "AI Agent5"
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://graph.instagram.com/v25.0/{{ $('Webhook').item.json.body.entry[0].changes[0].value.from.id }}/replies",
+        "url": "=https://graph.instagram.com/v25.0/{{ $('Webhook1').item.json.body.entry[0].changes[0].value.from.id }}/replies",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -381,11 +381,11 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        21216,
-        11744
+        2464,
+        2064
       ],
-      "id": "e21fdd06-c0df-4612-9cab-e8eb4ba55cf8",
-      "name": "HTTP Request6"
+      "id": "4636e9e2-37a7-475f-a977-feedf3fdddbb",
+      "name": "HTTP Request8"
     },
     {
       "parameters": {
@@ -396,11 +396,11 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        20736,
-        11744
+        1984,
+        2064
       ],
-      "id": "6bd73322-8d2a-43ab-a043-0b8057fe7914",
-      "name": "Edit Fields"
+      "id": "71cfe518-ac2d-421b-a11c-07db479273df",
+      "name": "Edit Fields1"
     },
     {
       "parameters": {
@@ -411,34 +411,11 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        20624,
-        12016
+        1872,
+        2336
       ],
-      "id": "24ba78fb-1200-4208-a6ab-5f056f7e9f67",
-      "name": "Edit Fields8"
-    },
-    {
-      "parameters": {
-        "model": "canopylabs/orpheus-v1-english",
-        "options": {
-          "maxTokensToSample": 200,
-          "temperature": 0.5
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
-      "typeVersion": 1,
-      "position": [
-        20928,
-        11904
-      ],
-      "id": "c511e0b4-5034-4414-b728-2780c5ed1cae",
-      "name": "Groq Chat Model",
-      "credentials": {
-        "groqApi": {
-          "id": "EFQCmqsVrnw4OqAW",
-          "name": "Groq account"
-        }
-      }
+      "id": "4d8650c4-ecba-4a08-807d-a64075e3c271",
+      "name": "Edit Fields11"
     },
     {
       "parameters": {
@@ -455,17 +432,12 @@
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
       "position": [
-        21152,
-        12368
+        2400,
+        2688
       ],
-      "id": "268af6c9-e656-4ab7-b39c-f4bfcb416de3",
-      "name": "Download file",
-      "credentials": {
-        "googleDriveOAuth2Api": {
-          "id": "lLm1Mzt83crF4rZe",
-          "name": "Google Drive account"
-        }
-      }
+      "id": "8da12040-d100-4220-8fc8-77f1f51e3a05",
+      "name": "Download file1",
+      "disabled": true
     },
     {
       "parameters": {
@@ -474,14 +446,14 @@
       "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
       "typeVersion": 1,
       "position": [
-        21296,
-        12528
+        2544,
+        2848
       ],
-      "id": "4163b177-3619-46b4-bd23-0a4bcd45dc4b",
-      "name": "Embeddings Google Gemini",
+      "id": "9787d57e-08cf-4551-a91a-43009223235d",
+      "name": "Embeddings Google Gemini1",
       "credentials": {
         "googlePalmApi": {
-          "id": "8JwcBNO8t0Rbq5Id",
+          "id": "ckp1URgiys68muFa",
           "name": "Google Gemini(PaLM) Api account"
         }
       }
@@ -496,11 +468,12 @@
       "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
       "typeVersion": 1.1,
       "position": [
-        21408,
-        12528
+        2656,
+        2848
       ],
-      "id": "42c75bf6-538c-45f8-87ab-2479c5243739",
-      "name": "Default Data Loader"
+      "id": "dd60b6c3-e2f7-4bd9-9000-5d89aefa57a2",
+      "name": "Default Data Loader1",
+      "disabled": true
     },
     {
       "parameters": {
@@ -510,11 +483,12 @@
       "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
       "typeVersion": 1,
       "position": [
-        21408,
-        12656
+        2656,
+        2976
       ],
-      "id": "930d375c-e679-4d98-a628-d210ef46b7a6",
-      "name": "Recursive Character Text Splitter"
+      "id": "08e5718b-3c69-4e09-a019-ea3856286536",
+      "name": "Recursive Character Text Splitter1",
+      "disabled": true
     },
     {
       "parameters": {
@@ -531,17 +505,18 @@
       "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
       "typeVersion": 1.3,
       "position": [
-        21296,
-        12368
+        2544,
+        2688
       ],
-      "id": "282d03a4-ef17-4538-a4d4-03c0e6cd3674",
-      "name": "Pinecone Vector Store",
+      "id": "8a448af8-a013-47e3-a058-32dabee06642",
+      "name": "Pinecone Vector Store1",
       "credentials": {
         "pineconeApi": {
-          "id": "UndLstXHKkF6veLc",
+          "id": "tQ4eWCluYby9A04l",
           "name": "PineconeApi account"
         }
-      }
+      },
+      "disabled": true
     },
     {
       "parameters": {
@@ -559,14 +534,14 @@
       "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
       "typeVersion": 1.3,
       "position": [
-        21296,
-        12208
+        2544,
+        2528
       ],
-      "id": "d06ab027-d0da-43a5-9d8f-0d2e54ff2c61",
-      "name": "Pinecone Vector Store4",
+      "id": "5ec1e370-f8f8-4461-84a5-125c7bb99a2a",
+      "name": "Pinecone Vector Store5",
       "credentials": {
         "pineconeApi": {
-          "id": "UndLstXHKkF6veLc",
+          "id": "tQ4eWCluYby9A04l",
           "name": "PineconeApi account"
         }
       }
@@ -600,11 +575,11 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        21584,
-        12016
+        2832,
+        2336
       ],
-      "id": "1be33c03-d5d4-48ad-98e0-6e7d897445ce",
-      "name": "If4"
+      "id": "bc82c871-acb4-401f-8afe-a0605ad19295",
+      "name": "If5"
     },
     {
       "parameters": {
@@ -653,16 +628,16 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        21792,
-        11936
+        3040,
+        2256
       ],
-      "id": "b87abc99-92d9-44c0-969c-3ef785aedd49",
-      "name": "Edit Fields9"
+      "id": "bdeb65e0-b8cb-4798-9f57-f9671b07bf96",
+      "name": "Edit Fields12"
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://graph.instagram.com/v25.0/{{ $('Webhook').item.json.body.entry[0].messaging[0].recipient.id }}/messages",
+        "url": "=https://graph.instagram.com/v25.0/{{ $('Webhook1').item.json.body.entry[0].messaging[0].recipient.id }}/messages",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -674,7 +649,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ {\n messaging_type: \"RESPONSE\",\n recipient: {\nid: $('Webhook').item.json.body.entry[0].messaging[0].sender.id\n },\nmessage: {\ntext: $json.confirmationMessage\n}\n} }}",
+        "jsonBody": "={{ {\n messaging_type: \"RESPONSE\",\n recipient: {\nid: $('Webhook1').item.json.body.entry[0].messaging[0].sender.id\n },\nmessage: {\ntext: $json.confirmationMessage\n}\n} }}",
         "options": {
           "redirect": {
             "redirect": {}
@@ -684,11 +659,11 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        22480,
-        11936
+        3728,
+        2256
       ],
-      "id": "69e51b5d-956f-4553-8c3f-c52f88c18fca",
-      "name": "HTTP Request7"
+      "id": "f43e1355-912f-49f3-9bf8-1d7985d92147",
+      "name": "HTTP Request9"
     },
     {
       "parameters": {
@@ -707,11 +682,11 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        22320,
-        11936
+        3568,
+        2256
       ],
-      "id": "5a1bdc7d-f2bf-4ec2-b711-6afb8d002962",
-      "name": "Edit Fields10"
+      "id": "e4652551-8349-46b5-999f-dbb346ca0ccf",
+      "name": "Edit Fields13"
     },
     {
       "parameters": {
@@ -808,14 +783,14 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        21984,
-        11936
+        3232,
+        2256
       ],
-      "id": "2154f2bc-27d5-4819-bf9d-5dc21ed2ae22",
-      "name": "Append or update row in sheet",
+      "id": "c3578dd4-5cf3-422a-946f-961aae22bb76",
+      "name": "Append or update row in sheet1",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "2dvuvMpwQe7b0sGm",
+          "id": "BszyxYIl7V01jXJS",
           "name": "Google Sheets account"
         }
       }
@@ -831,15 +806,15 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
       "typeVersion": 1,
       "position": [
-        21104,
-        12208
+        2352,
+        2528
       ],
-      "id": "627ffc58-3edb-4da3-9aba-49df085f9131",
-      "name": "Mistral Cloud Chat Model",
+      "id": "a1398e7c-ec67-49fb-8ab2-4db1d602eda2",
+      "name": "Mistral Cloud Chat Model2",
       "credentials": {
         "mistralCloudApi": {
-          "id": "JIyXgNNVOA27Zc0k",
-          "name": "Mistral Cloud account 2"
+          "id": "0rcK32wlWzHDbCUK",
+          "name": "Mistral Cloud account"
         }
       }
     },
@@ -857,11 +832,11 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
-        21456,
-        11744
+        2704,
+        2064
       ],
-      "name": "Every 30 Minutes",
-      "id": "0b139a47-b1d0-43b0-84df-660a1c7daff0"
+      "name": "Every 30 Minutes1",
+      "id": "b61efe52-0327-4945-a841-22d2e20ac1bf"
     },
     {
       "parameters": {
@@ -884,14 +859,14 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        21696,
-        11744
+        2944,
+        2064
       ],
-      "name": "Get Pending Leads",
-      "id": "528a0eb8-ee68-4115-a0ee-0193bdeff112",
+      "name": "Get Pending Leads1",
+      "id": "71899146-de2f-42ac-9984-e9a793270e6f",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "2dvuvMpwQe7b0sGm",
+          "id": "BszyxYIl7V01jXJS",
           "name": "Google Sheets account"
         }
       }
@@ -903,11 +878,11 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        21936,
-        11744
+        3184,
+        2064
       ],
-      "name": "Filter 4hr+ No Conversion",
-      "id": "0996a4aa-0b1d-4801-8426-d0637f112737"
+      "name": "Filter 4hr+ No Conversion1",
+      "id": "4798d225-2d62-4e13-9791-5e2038d1e883"
     },
     {
       "parameters": {
@@ -936,11 +911,11 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        22176,
-        11744
+        3424,
+        2064
       ],
-      "name": "Any Due Follow-ups?",
-      "id": "ba9c0c32-4c48-4b9d-b766-f004c6a20e07"
+      "name": "Any Due Follow-ups?1",
+      "id": "64bba50a-6063-4cd4-8de1-52c06376dcd4"
     },
     {
       "parameters": {
@@ -963,11 +938,11 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        22416,
-        11744
+        3664,
+        2064
       ],
-      "name": "Send Follow-up DM",
-      "id": "d37a7419-7883-4a6a-bd49-9e4379fd3218"
+      "name": "Send Follow-up DM1",
+      "id": "40ea1309-9ecf-48f4-a6a0-18f58280dd14"
     },
     {
       "parameters": {
@@ -991,7 +966,7 @@
           "value": {
             "FOLLOW_UP_TIME": "={{ $now.toISO() }}",
             "FOLLOW_UP_SENT": "={{true}}",
-            "SENDER_ID": "={{ $('Get Pending Leads').item.json.SENDER_ID }}"
+            "SENDER_ID": "={{ $('Get Pending Leads1').item.json.SENDER_ID }}"
           },
           "matchingColumns": [
             "SENDER_ID"
@@ -1075,38 +1050,38 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        22656,
-        11744
+        3904,
+        2064
       ],
-      "name": "Mark Follow-up Sent2",
-      "id": "387d60b1-c118-4471-9796-5f3cbd5e9127",
+      "name": "Mark Follow-up Sent",
+      "id": "4184e98c-3291-4869-b729-403268a7aa4d",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "2dvuvMpwQe7b0sGm",
+          "id": "BszyxYIl7V01jXJS",
           "name": "Google Sheets account"
         }
       }
     },
     {
       "parameters": {},
-      "id": "1bab1a5d-4e45-4213-ba12-be9953291c96",
-      "name": "Window Buffer Memory 1",
+      "id": "ab157d55-6d8f-4f7a-ba35-cc986a3e113f",
+      "name": "Window Buffer Memory ",
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.2,
       "position": [
-        21200,
-        12208
+        2448,
+        2528
       ]
     },
     {
       "parameters": {},
-      "id": "fa979722-728d-4cf6-a6a3-6be26651b5a4",
-      "name": "Window Buffer Memory 2",
+      "id": "504df13b-3578-4eb0-bd94-d53f3dc13a9b",
+      "name": "Window Buffer Memory 3",
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.2,
       "position": [
-        21024,
-        11904
+        2272,
+        2224
       ]
     },
     {
@@ -1118,20 +1093,20 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
       "position": [
-        20032,
-        11904
+        1280,
+        2224
       ],
-      "id": "b878b3a2-951f-4909-985f-848f08bc9431",
-      "name": "Switch1"
+      "id": "d569d4e8-16e3-45dd-ad10-0b03c021c882",
+      "name": "Switch3"
     },
     {
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "pzKGoiSxKgK9WpRv",
+          "value": "kFZ9x2eYOFFCT3w5",
           "mode": "list",
-          "cachedResultUrl": "/workflow/pzKGoiSxKgK9WpRv",
-          "cachedResultName": "veetile_vandi"
+          "cachedResultUrl": "/workflow/kFZ9x2eYOFFCT3w5",
+          "cachedResultName": "Inform Requester - Send Instagram DM"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -1146,378 +1121,396 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        20272,
-        12016
+        1520,
+        2336
       ],
-      "id": "bd9d540a-abbe-4872-97aa-c2004239f4ab",
-      "name": "Call 'veetile_vandi'",
-      "disabled": true
+      "id": "30065b2c-095c-4029-a212-b600e0763097",
+      "name": "Call 'Inform Requester - Send Instagram DM'1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        2176,
+        2224
+      ],
+      "id": "a70649aa-b9ac-4c06-8f7d-ec6304d882ed",
+      "name": "Mistral Cloud Chat Model3",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "0rcK32wlWzHDbCUK",
+          "name": "Mistral Cloud account"
+        }
+      }
     }
   ],
   "connections": {
-    "Check DB": {
+    "Check DB1": {
       "main": [
         [
           {
-            "node": "Load Memory Context",
+            "node": "Load Memory Context1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Load Memory Context": {
+    "Load Memory Context1": {
       "main": [
         [
           {
-            "node": "AI Agent",
+            "node": "AI Agent1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Mark CONVERTED1": {
+    "Mark CONVERTED": {
       "main": [
         [
           {
-            "node": "Edit Fields10",
+            "node": "Edit Fields13",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Webhook": {
+    "Webhook1": {
       "main": [
         [
           {
-            "node": "If",
+            "node": "If1",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Switch1",
+            "node": "Switch3",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "AI Agent": {
+    "AI Agent1": {
       "main": [
         [
           {
-            "node": "If4",
+            "node": "If5",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "HTTP Request": {
+    "HTTP Request1": {
       "main": [
         [
           {
-            "node": "Log to PendingFollowUps1",
+            "node": "Log to PendingFollowUps",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "If": {
+    "If1": {
       "main": [
         [
           {
-            "node": "Respond to Webhook",
+            "node": "Respond to Webhook1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Switch": {
+    "Switch2": {
       "main": [
         [
           {
-            "node": "Edit Fields",
+            "node": "Edit Fields1",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Edit Fields8",
+            "node": "Edit Fields11",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "AI Agent4": {
+    "AI Agent5": {
       "main": [
         [
           {
-            "node": "HTTP Request6",
+            "node": "HTTP Request8",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Edit Fields": {
+    "Edit Fields1": {
       "main": [
         [
           {
-            "node": "AI Agent4",
+            "node": "AI Agent5",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Edit Fields8": {
+    "Edit Fields11": {
       "main": [
         [
           {
-            "node": "Check DB",
+            "node": "Check DB1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Groq Chat Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "AI Agent4",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Download file": {
+    "Download file1": {
       "main": [
         [
           {
-            "node": "Pinecone Vector Store",
+            "node": "Pinecone Vector Store1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Embeddings Google Gemini": {
+    "Embeddings Google Gemini1": {
       "ai_embedding": [
         [
           {
-            "node": "Pinecone Vector Store",
+            "node": "Pinecone Vector Store1",
             "type": "ai_embedding",
             "index": 0
           },
           {
-            "node": "Pinecone Vector Store4",
+            "node": "Pinecone Vector Store5",
             "type": "ai_embedding",
             "index": 0
           }
         ]
       ]
     },
-    "Default Data Loader": {
+    "Default Data Loader1": {
       "ai_document": [
         [
           {
-            "node": "Pinecone Vector Store",
+            "node": "Pinecone Vector Store1",
             "type": "ai_document",
             "index": 0
           }
         ]
       ]
     },
-    "Recursive Character Text Splitter": {
+    "Recursive Character Text Splitter1": {
       "ai_textSplitter": [
         [
           {
-            "node": "Default Data Loader",
+            "node": "Default Data Loader1",
             "type": "ai_textSplitter",
             "index": 0
           }
         ]
       ]
     },
-    "Pinecone Vector Store4": {
+    "Pinecone Vector Store5": {
       "ai_tool": [
         [
           {
-            "node": "AI Agent",
+            "node": "AI Agent1",
             "type": "ai_tool",
             "index": 0
           },
           {
-            "node": "AI Agent4",
+            "node": "AI Agent5",
             "type": "ai_tool",
             "index": 0
           }
         ]
       ]
     },
-    "If4": {
+    "If5": {
       "main": [
         [
           {
-            "node": "Edit Fields9",
+            "node": "Edit Fields12",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "HTTP Request",
+            "node": "HTTP Request1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Edit Fields9": {
+    "Edit Fields12": {
       "main": [
         [
           {
-            "node": "Append or update row in sheet",
+            "node": "Append or update row in sheet1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Edit Fields10": {
+    "Edit Fields13": {
       "main": [
         [
           {
-            "node": "HTTP Request7",
+            "node": "HTTP Request9",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Append or update row in sheet": {
+    "Append or update row in sheet1": {
       "main": [
         [
           {
-            "node": "Mark CONVERTED1",
+            "node": "Mark CONVERTED",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Mistral Cloud Chat Model": {
+    "Mistral Cloud Chat Model2": {
       "ai_languageModel": [
         [
           {
-            "node": "AI Agent",
+            "node": "AI Agent1",
             "type": "ai_languageModel",
             "index": 0
           }
         ]
       ]
     },
-    "Every 30 Minutes": {
+    "Every 30 Minutes1": {
       "main": [
         [
           {
-            "node": "Get Pending Leads",
+            "node": "Get Pending Leads1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Get Pending Leads": {
+    "Get Pending Leads1": {
       "main": [
         [
           {
-            "node": "Filter 4hr+ No Conversion",
+            "node": "Filter 4hr+ No Conversion1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Filter 4hr+ No Conversion": {
+    "Filter 4hr+ No Conversion1": {
       "main": [
         [
           {
-            "node": "Any Due Follow-ups?",
+            "node": "Any Due Follow-ups?1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Any Due Follow-ups?": {
+    "Any Due Follow-ups?1": {
       "main": [
         [
           {
-            "node": "Send Follow-up DM",
+            "node": "Send Follow-up DM1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Send Follow-up DM": {
+    "Send Follow-up DM1": {
       "main": [
         [
           {
-            "node": "Mark Follow-up Sent2",
+            "node": "Mark Follow-up Sent",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Window Buffer Memory 1": {
+    "Window Buffer Memory ": {
       "ai_memory": [
         [
           {
-            "node": "AI Agent",
+            "node": "AI Agent1",
             "type": "ai_memory",
             "index": 0
           }
         ]
       ]
     },
-    "Window Buffer Memory 2": {
+    "Window Buffer Memory 3": {
       "ai_memory": [
         [
           {
-            "node": "AI Agent4",
+            "node": "AI Agent5",
             "type": "ai_memory",
             "index": 0
           }
         ]
       ]
     },
-    "Switch1": {
+    "Switch3": {
       "main": [
         [
           {
-            "node": "Switch",
+            "node": "Switch2",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Call 'veetile_vandi'",
+            "node": "Call 'Inform Requester - Send Instagram DM'1",
             "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent5",
+            "type": "ai_languageModel",
             "index": 0
           }
         ]
@@ -1526,7 +1519,6 @@
   },
   "pinData": {},
   "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "812e57160b6cfa0488283afdc6a904b27f91c8dd7755e053008327f19ff2ef3d"
+    "instanceId": "abaad11c3e60e557df9fc051eed7931e09f7e0c88f9b24837b3a628ce3820fe2"
   }
 }
