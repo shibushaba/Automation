@@ -1101,25 +1101,15 @@
     },
     {
       "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "kFZ9x2eYOFFCT3w5",
-          "mode": "list",
-          "cachedResultUrl": "/workflow/kFZ9x2eYOFFCT3w5",
-          "cachedResultName": "Inform Requester - Send Instagram DM"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {},
-          "matchingColumns": [],
-          "schema": [],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
+        "method": "POST",
+        "url": "https://ijaaas.app.n8n.cloud/webhook/inform-requester",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  \"instagram_id\": $('Edit Fields11').item.json.senderId,\n  \"message\": \"Hi! Your request from our website has been received. Our team will reach out to you shortly.\"\n} }}",
         "options": {}
       },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
       "position": [
         1520,
         2336
