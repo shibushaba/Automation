@@ -1,0 +1,131 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Base ──────────────────────────────────────────────────── */
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: #f2f2f0;
+  color: #0a0a0a;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  /* Dot-grid background like Stryke */
+  background-image: radial-gradient(circle, #c8c8c4 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+* { box-sizing: border-box; }
+
+h1, h2, h3 {
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+@layer components {
+  /* ── Buttons ── */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 font-mono font-bold text-xs tracking-widest uppercase
+           px-5 py-3 transition-all duration-150 cursor-pointer select-none;
+    border: 1px solid #0a0a0a;
+  }
+  .btn:hover { background-color: #0a0a0a; color: #f2f2f0; }
+  .btn:active { transform: scale(0.96); }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 font-mono font-bold text-xs tracking-widest uppercase
+           px-5 py-3 transition-all duration-150 cursor-pointer select-none text-white;
+    background-color: #e1492c;
+    border: 1px solid #e1492c;
+  }
+  .btn-primary:hover  { background-color: #c03a20; border-color: #c03a20; }
+  .btn-primary:active { transform: scale(0.96); }
+  .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .btn-accent {
+    @apply inline-flex items-center justify-center gap-2 font-mono font-bold text-xs tracking-widest uppercase
+           px-5 py-3 transition-all duration-150 cursor-pointer select-none text-white;
+    background-color: #2596be;
+    border: 1px solid #2596be;
+  }
+  .btn-accent:hover  { background-color: #1a7a9e; border-color: #1a7a9e; }
+  .btn-accent:active { transform: scale(0.96); }
+  .btn-accent:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 font-mono font-bold text-xs tracking-widest uppercase
+           px-5 py-3 transition-all duration-150 cursor-pointer select-none;
+    background-color: transparent;
+    color: #0a0a0a;
+    border: 1px solid #0a0a0a;
+  }
+  .btn-ghost:hover { background-color: #0a0a0a; color: #f2f2f0; }
+  .btn-ghost:active { transform: scale(0.96); }
+  .btn-ghost:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .btn-ghost-accent {
+    @apply inline-flex items-center justify-center gap-2 font-mono font-bold text-xs tracking-widest uppercase
+           px-5 py-3 transition-all duration-150 cursor-pointer select-none;
+    background-color: transparent;
+    color: #2596be;
+    border: 1px solid #2596be;
+  }
+  .btn-ghost-accent:hover { background-color: #2596be; color: white; }
+
+  .btn-sm { @apply px-3 py-1.5 text-[10px]; }
+
+  /* ── Inputs ── */
+  .form-input {
+    @apply w-full px-3 py-2.5 text-sm font-mono placeholder-gray-400 transition-all duration-150;
+    background-color: #ffffff;
+    border: 1px solid #0a0a0a;
+    border-radius: 0;
+    outline: none;
+  }
+  .form-input:focus { box-shadow: 0 0 0 2px rgba(37,150,190,0.3); }
+
+  .form-label {
+    @apply block font-mono text-[10px] font-bold tracking-widest uppercase mb-1.5;
+    color: #6b7280;
+  }
+
+  /* ── Panels ── */
+  .panel {
+    background-color: #ffffff;
+    border: 1px solid #0a0a0a;
+    @apply p-6;
+  }
+  .panel-accent { border-left: 4px solid #2596be; }
+  .panel-primary { border-left: 4px solid #e1492c; }
+
+  /* ── Section label ── */
+  .section-label {
+    @apply font-mono text-[10px] tracking-[0.25em] uppercase;
+    color: #9ca3af;
+  }
+
+  /* ── Data table ── */
+  .data-table th {
+    @apply font-mono text-[10px] tracking-widest uppercase text-left px-4 py-2;
+    background-color: #f2f2f0;
+    color: #6b7280;
+    border-bottom: 1px solid #0a0a0a;
+  }
+  .data-table td {
+    @apply font-mono text-xs px-4 py-3;
+    color: #0a0a0a;
+    border-bottom: 1px solid #e8e8e5;
+  }
+  .data-table tr:hover td { background-color: #f2f2f0; }
+
+  /* ── Badge ── */
+  .badge {
+    @apply inline-block font-mono text-[9px] tracking-widest uppercase px-2 py-0.5;
+    border: 1px solid currentColor;
+  }
+  .badge-primary { color: #e1492c; border-color: #e1492c; }
+  .badge-accent  { color: #2596be; border-color: #2596be; }
+  .badge-ink     { color: #f2f2f0; background-color: #0a0a0a; border-color: #0a0a0a; }
+  .badge-success { color: #16a34a; border-color: #16a34a; }
+}

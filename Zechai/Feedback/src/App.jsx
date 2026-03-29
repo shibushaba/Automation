@@ -1,0 +1,21 @@
+import { HashRouter, Routes, Route } from 'react-router-dom';
+import Home             from './pages/Home';
+import CustomerFeedback from './pages/CustomerFeedback';
+import StaffReport      from './pages/StaffReport';
+import AdminLogin       from './pages/AdminLogin';
+import AdminPanel       from './pages/AdminPanel';
+import AdminGuard       from './components/AdminGuard';
+
+export default function App() {
+  return (
+    <HashRouter>
+      <Routes>
+        <Route path="/"            element={<Home />} />
+        <Route path="/customer"    element={<CustomerFeedback />} />
+        <Route path="/staff"       element={<StaffReport />} />
+        <Route path="/admin-login" element={<AdminLogin />} />
+        <Route path="/admin"       element={<AdminGuard><AdminPanel /></AdminGuard>} />
+      </Routes>
+    </HashRouter>
+  );
+}
