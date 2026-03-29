@@ -27,9 +27,7 @@ export default function StaffQR() {
           Scan to submit your daily operation report
         </p>
 
-        <Link to="/" className="btn-ghost text-xs mt-12 px-6 py-2 border-dashed">
-          ← Back to Hub
-        </Link>
+        
       </div>
     </div>
   );
