@@ -450,8 +450,8 @@ function DailyReportTab() {
       if (savedReport?.ai_content && !forceAI) {
         aiParagraph = savedReport.ai_content;
       } else {
-        const geminiKey = import.meta.env.VITE_GEMINI_API_KEY;
-        if (geminiKey) {
+        const groqKey = import.meta.env.VITE_GROQ_API_KEY;
+        if (groqKey) {
           try {
             const prompt = `You are the ZECHAI cafe manager. Based on today's data, write a Markdown formatted summary for the admin.
 Use 3 clear sections with these exact headers:
@@ -467,25 +467,22 @@ ${customers.map((c) => `- ${c.name}: ${c.stars}★, ordered: ${c.item_ordered}, 
 STAFF DATA (${staff.length} reports):
 ${staff.map((s) => `- ${s.name}: day rating ${s.day_stars}★, complaints: "${s.complaints}", feedback: "${s.feedback}"`).join('\n') || 'No staff reports today.'}`;
 
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey.trim()}`, {
+            const res = await fetch(`https://api.groq.com/openai/v1/chat/completions`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+              headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${groqKey.trim()}`
+              },
+              body: JSON.stringify({ 
+                model: 'llama3-70b-8192',
+                messages: [{ role: 'user', content: prompt }]
+              }),
             });
             const json = await res.json();
             if (!res.ok) {
               aiError = json?.error?.message || `API Error: ${res.status}`;
-              // Debug: fetch available models
-              try {
-                const modelsRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${geminiKey.trim()}`);
-                const mJson = await modelsRes.json();
-                if (mJson.models) {
-                  const supported = mJson.models.filter(m => m.supportedGenerationMethods.includes('generateContent')).map(m => m.name.replace('models/', '')).join(', ');
-                  aiError += `\n\nYour API key supports these models: ${supported}`;
-                }
-              } catch (_) { /* ignore */ }
             } else {
-              aiParagraph = json?.candidates?.[0]?.content?.parts?.[0]?.text || null;
+              aiParagraph = json?.choices?.[0]?.message?.content || null;
               if (aiParagraph) {
                 await supabase.from('saved_daily_reports').upsert({
                   report_date: date,
