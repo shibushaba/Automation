@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { logoutAdmin } from '../components/AdminGuard';
 import StarRating from '../components/StarRating';
 import toast, { Toaster } from 'react-hot-toast';
+import ReactMarkdown from 'react-markdown';
 
 const TABS = ['Customers', 'Staff', 'Daily Report'];
 
@@ -173,6 +174,7 @@ function StaffTab() {
   const [achievements, setAchievements] = useState([]);
   const [marks, setMarks]         = useState([]);
   const [todayMark, setTodayMark] = useState(null);
+  const [leaderboard, setLeaderboard] = useState([]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -183,7 +185,41 @@ function StaffTab() {
     if (data) setRows(data);
   }, [dateFilter]);
 
-  useEffect(() => { load(); }, [load]);
+  const loadLeaderboardAndAwards = useCallback(async () => {
+    const now = new Date();
+    const currYear = now.getFullYear();
+    const currMonthStr = String(now.getMonth() + 1).padStart(2, '0');
+    // Load current month's leaderboard
+    const { data: mData } = await supabase.from('staff_marks').select('*').gte('date', `${currYear}-${currMonthStr}-01`);
+    if (mData) {
+      const bMap = {};
+      mData.forEach(m => {
+        const k = m.staff_phone || m.staff_name;
+        if (!bMap[k]) bMap[k] = { name: m.staff_name, phone: m.staff_phone, total: 0 };
+        bMap[k].total += m.mark;
+      });
+      setLeaderboard(Object.values(bMap).sort((a, b) => b.total - a.total));
+    }
+
+    // Auto-award Best Staff on the LAST DAY of the current month
+    const currMonth = now.getMonth() + 1; // 1-12
+    const lastDayOfMonth = new Date(currYear, currMonth, 0).getDate();
+    
+    if (now.getDate() === lastDayOfMonth) {
+      const { data: existing } = await supabase.from('staff_achievements').select('id').eq('month', currMonth).eq('year', currYear).eq('title', 'Best Staff of the Month');
+      if (!existing || existing.length === 0) {
+        if (mData && mData.length > 0) {
+          const top = Object.values(bMap).sort((a, b) => b.total - a.total)[0];
+          if (top) {
+            await supabase.from('staff_achievements').insert([{ staff_name: top.name, staff_phone: top.phone, month: currMonth, year: currYear, title: 'Best Staff of the Month' }]);
+            toast.success(`🏆 Auto-awarded Best Staff of the month to ${top.name}!`);
+          }
+        }
+      }
+    }
+  }, []);
+
+  useEffect(() => { load(); loadLeaderboardAndAwards(); }, [load, loadLeaderboardAndAwards]);
 
   // Build unique staff list
   const staffMap = {};
@@ -197,6 +233,16 @@ function StaffTab() {
   const loadAchievements = async (phone) => {
     const { data } = await supabase.from('staff_achievements').select('*').eq('staff_phone', phone || '').order('awarded_at', { ascending: false });
     setAchievements(data || []);
+  };
+
+  const deleteAchievement = async (id, staff) => {
+    if (!window.confirm('Remove this achievement?')) return;
+    toast.loading('Deleting...', { id: 'del-ach' });
+    const { error } = await supabase.from('staff_achievements').delete().eq('id', id);
+    if (!error) {
+      toast.success('Achievement removed', { id: 'del-ach' });
+      loadAchievements(staff.phone);
+    } else toast.error('Failed to delete', { id: 'del-ach' });
   };
 
   const openProfile = async (staff) => {
@@ -230,17 +276,9 @@ function StaffTab() {
       if (data && data[0]) {
         setMarks([data[0], ...marks]);
         setTodayMark(data[0]);
+        loadLeaderboardAndAwards(); // Refresh live leaderboard
       }
     } else toast.error('Failed to assign mark', { id: 'mark' });
-  };
-
-  const awardBestStaff = async (staff) => {
-    const now = new Date();
-    const { error } = await supabase.from('staff_achievements').insert([{
-      staff_name: staff.name, staff_phone: staff.phone,
-      month: now.getMonth() + 1, year: now.getFullYear(), title: 'Best Staff of the Month',
-    }]);
-    if (error) toast.error('Failed to award.'); else { toast.success(`🏆 Awarded to ${staff.name}!`); loadAchievements(staff.phone); }
   };
 
   const avgStars = (reports) => {
@@ -278,10 +316,24 @@ function StaffTab() {
       {/* Staff list */}
       <div className="flex-1">
         <div className="flex flex-wrap gap-3 mb-4 items-center">
-          <input type="date" className="form-input max-w-xs text-xs" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} />
+          <input type="date" className="form-input max-w-xs text-xs" value={dateFilter} max={new Date().toISOString().slice(0, 10)} onChange={(e) => setDateFilter(e.target.value)} />
           <button onClick={() => setDateFilter('')} className="btn btn-sm border-ink">Clear</button>
           <button onClick={load} className="btn btn-sm border-accent text-accent hover:bg-accent hover:text-white">↻ Refresh</button>
         </div>
+
+        {/* Live Leaderboard */}
+        {leaderboard.length > 0 && (
+          <div className="border border-ink bg-white p-4 mb-4 flex items-center justify-between shadow-[4px_4px_0_0_#16a34a]">
+            <div>
+              <p className="font-mono text-[9px] text-green-700 font-bold tracking-widest uppercase">Live Sub-Month Leaderboard</p>
+              <p className="font-black text-xl uppercase mt-1">1st Place: {leaderboard[0].name}</p>
+            </div>
+            <div className="text-right">
+              <span className="font-black text-3xl text-green-700">{leaderboard[0].total}</span>
+              <span className="font-mono text-xs text-gray-500 block">Marks</span>
+            </div>
+          </div>
+        )}
 
         {/* Summary stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 border border-ink bg-white mb-4">
@@ -325,6 +377,11 @@ function StaffTab() {
             <button onClick={() => setSelected(null)} className="font-mono text-[10px] text-gray-400 hover:text-ink">✕ Close</button>
           </div>
           <p className="font-mono text-[10px] text-gray-400">{selected.phone} · {selected.reports.length} reports</p>
+          
+          <div className="p-3 bg-gray-50 border border-ink text-center flex flex-col items-center">
+            <span className="font-black text-3xl text-ink">{achievements.length}</span>
+            <span className="font-mono text-[9px] uppercase tracking-widest text-gray-500">Lifetime Awards</span>
+          </div>
 
           {/* Achievements */}
           {achievements.length > 0 && (
@@ -332,7 +389,12 @@ function StaffTab() {
               <p className="form-label mb-2">Achievements</p>
               <div className="flex flex-wrap gap-1">
                 {achievements.map((a, i) => (
-                  <span key={i} className="badge badge-ink text-[9px]">🏆 {a.title} {a.month}/{a.year}</span>
+                  <span key={i} className="badge badge-ink text-[9px] relative pr-6 group">
+                    🏆 {a.title} {a.month}/{a.year}
+                    <button onClick={() => deleteAchievement(a.id, selected)} title="Delete Award" className="absolute right-1 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                      ✕
+                    </button>
+                  </span>
                 ))}
               </div>
             </div>
@@ -357,11 +419,6 @@ function StaffTab() {
               </div>
             )}
           </div>
-
-          {/* Best Staff Award */}
-          <button onClick={() => awardBestStaff(selected)} className="btn w-full border-primary text-primary hover:bg-primary hover:text-white">
-            🏆 Award Best Staff of Month
-          </button>
 
           {/* Recent reports */}
           <div className="border-t border-ink pt-4">
@@ -412,231 +469,341 @@ function StaffTab() {
 
 /* ─── Daily Report Tab ──────────────────────────────────────── */
 function DailyReportTab() {
-  const [report, setReport]   = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [date, setDate]       = useState(new Date().toISOString().slice(0, 10));
-
-  const generate = async (forceAI = false) => {
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  const [activeReport, setActiveReport] = useState(null);
+  const [loadingModal, setLoadingModal] = useState(false);
+  
+  const todayDateStr = new Date().toISOString().slice(0, 10);
+  
+  const loadHistory = useCallback(async () => {
     setLoading(true);
-    setReport(null);
-    try {
-      const todayStart = `${date}T00:00:00`;
-      const todayEnd   = `${date}T23:59:59`;
+    const { data } = await supabase.from('saved_daily_reports').select('*').order('report_date', { ascending: false });
+    if (data) setHistory(data);
+    setLoading(false);
+  }, []);
 
-      const [{ data: custData }, { data: staffData }, { data: savedReport }] = await Promise.all([
-        supabase.from('customer_feedback').select('*').gte('created_at', todayStart).lte('created_at', todayEnd),
-        supabase.from('staff_reports').select('*').gte('created_at', todayStart).lte('created_at', todayEnd),
-        supabase.from('saved_daily_reports').select('*').eq('report_date', date).maybeSingle(),
+  useEffect(() => { loadHistory(); }, [loadHistory]);
+
+  const deleteAIReport = async (dateStr) => {
+    if (!window.confirm(`Permanently delete AI Report for ${dateStr}?`)) return;
+    toast.loading('Deleting AI Report...', { id: 'del-ai' });
+    const { error } = await supabase.from('saved_daily_reports').delete().eq('report_date', dateStr);
+    if (error) { toast.error('Failed to delete report', { id: 'del-ai' }); }
+    else { toast.success(`Report for ${dateStr} deleted!`, { id: 'del-ai' }); loadHistory(); }
+  };
+
+  const fetchFullReport = async (dateStr, autoOpen = true) => {
+    if (autoOpen) setLoadingModal(true);
+    try {
+      const start = `${dateStr}T00:00:00`;
+      const end   = `${dateStr}T23:59:59`;
+
+      const [{ data: cData }, { data: sData }, { data: savedReport }] = await Promise.all([
+        supabase.from('customer_feedback').select('*').gte('created_at', start).lte('created_at', end),
+        supabase.from('staff_reports').select('*').gte('created_at', start).lte('created_at', end),
+        supabase.from('saved_daily_reports').select('*').eq('report_date', dateStr).maybeSingle(),
       ]);
 
-      const customers = custData || [];
-      const staff     = staffData || [];
+      const customers = cData || [];
+      const staff     = sData || [];
 
-      // Phone frequency for returning customers
+      // Find best selling item
+      const itemCounts = {};
+      let bestItemCount = 0;
+      let bestItem = 'None';
+      customers.forEach(c => {
+        if (!c.item_ordered) return;
+        const i = c.item_ordered.toLowerCase().trim();
+        itemCounts[i] = (itemCounts[i] || 0) + 1;
+        if (itemCounts[i] > bestItemCount) {
+          bestItemCount = itemCounts[i];
+          bestItem = c.item_ordered;
+        }
+      });
+
+      // Find completely historically returning customers
+      const todaysPhones = customers.map(c => c.phone).filter(Boolean);
+      let pastReturningPhones = new Set();
+
+      if (todaysPhones.length > 0) {
+        const { data: pastData } = await supabase.from('customer_feedback')
+          .select('phone')
+          .in('phone', todaysPhones)
+          .lt('created_at', start);
+        if (pastData) pastData.forEach(p => pastReturningPhones.add(p.phone));
+      }
+
       const phoneFreq = {};
       customers.forEach((c) => { if (c.phone) phoneFreq[c.phone] = (phoneFreq[c.phone] || 0) + 1; });
-      const returningCount = Object.values(phoneFreq).filter((v) => v > 1).length;
+      
+      const totalUniqueCustomers = Object.keys(phoneFreq).length || customers.length; // fallback if no phones
+      const uniqueReturning = Object.keys(phoneFreq).filter(p => phoneFreq[p] > 1 || pastReturningPhones.has(p)).length;
+      
+      const returningCount = uniqueReturning;
+      const returnRate = totalUniqueCustomers ? Math.round((returningCount / totalUniqueCustomers) * 100) : 0;
 
       const custAvgStars  = customers.length ? (customers.reduce((a, r) => a + r.stars, 0) / customers.length) : 0;
       const staffAvgStars = staff.length ? (staff.reduce((a, r) => a + r.day_stars, 0) / staff.length) : 0;
       const bestCust      = customers.reduce((best, r) => r.stars > (best?.stars || 0) ? r : best, null);
       const complaints    = staff.filter((r) => r.complaints && r.complaints.trim().length > 3).map((r) => r.complaints);
 
-      // Try Gemini AI
-      let aiParagraph = null;
-      let aiError = null;
-
-      // Use saved explicitly unless forcing a new AI generation
-      if (savedReport?.ai_content && !forceAI) {
-        aiParagraph = savedReport.ai_content;
-      } else {
-        const groqKey = import.meta.env.VITE_GROQ_API_KEY;
-        if (groqKey) {
-          try {
-            const prompt = `You are the ZECHAI cafe manager. Based on today's data, write a Markdown formatted summary for the admin.
-Use 3 clear sections with these exact headers:
-## Highlights
-## Lowlights
-## Action Plan
-
-Do not write a generic intro or outro. Be specific, actionable, and concise. Keep it under 150 words total.
-
-CUSTOMER DATA (${customers.length} total, ${returningCount} returning):
-${customers.map((c) => `- ${c.name}: ${c.stars}★, ordered: ${c.item_ordered}, feedback: "${c.feedback_msg}", suggestion: "${c.suggestion}"`).join('\n') || 'No feedback today.'}
-
-STAFF DATA (${staff.length} reports):
-${staff.map((s) => `- ${s.name}: day rating ${s.day_stars}★, complaints: "${s.complaints}", feedback: "${s.feedback}"`).join('\n') || 'No staff reports today.'}`;
-
-            const res = await fetch(`https://api.groq.com/openai/v1/chat/completions`, {
-              method: 'POST',
-              headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${groqKey.trim()}`
-              },
-              body: JSON.stringify({ 
-                model: 'llama3-70b-8192',
-                messages: [{ role: 'user', content: prompt }]
-              }),
-            });
-            const json = await res.json();
-            if (!res.ok) {
-              aiError = json?.error?.message || `API Error: ${res.status}`;
-            } else {
-              aiParagraph = json?.choices?.[0]?.message?.content || null;
-              if (aiParagraph) {
-                await supabase.from('saved_daily_reports').upsert({
-                  report_date: date,
-                  ai_content: aiParagraph,
-                  generated_at: new Date().toISOString()
-                });
-              }
-            }
-          } catch (err) { Object.assign(window, {ai_err: err}); aiError = err.message || 'Network request failed. Check CORS or API key validity.'; }
-        }
-      }
-
-      setReport({
-        date, customers, staff, custAvgStars, staffAvgStars, returningCount,
-        bestCust, complaints, aiParagraph, aiError, generated: new Date().toLocaleTimeString(),
-        onForcedRegenerate: () => generate(true)
-      });
+      const payload = {
+        date: dateStr, customers, staff, custAvgStars, staffAvgStars, 
+        returningCount, returnRate, bestItem, bestItemCount,
+        bestCust, complaints, aiParagraph: savedReport?.ai_content || null, 
+        generated_at: savedReport?.generated_at
+      };
+      
+      if (autoOpen) setActiveReport(payload);
+      return payload;
     } catch (err) {
-      toast.error('Failed to generate report.');
+      toast.error('Failed to load full report stats.');
       console.error(err);
     }
-    setLoading(false);
+    if (autoOpen) setLoadingModal(false);
   };
 
+  const generateToday = async (forceDate) => {
+    const targetDate = forceDate || todayDateStr;
+    setLoadingModal(true);
+    toast.loading(`Gathering data for ${targetDate}...`, { id: 'ai' });
+    
+    // Fetch raw stats first
+    const payload = await fetchFullReport(targetDate, false);
+    if (!payload || (payload.customers.length === 0 && payload.staff.length === 0)) { 
+      toast.error(`Cannot generate: No customer or staff entries found for ${targetDate}.`, { id: 'ai' }); 
+      setLoadingModal(false); 
+      return; 
+    }
+
+    toast.loading('Running Deep Analysis via Groq...', { id: 'ai' });
+    try {
+      const groqKey = import.meta.env.VITE_GROQ_API_KEY;
+      if (!groqKey) throw new Error("No VITE_GROQ_API_KEY found in .env.");
+
+      const prompt = `You are a manager at ZECHAI cafe.
+Analyze today's data and write a highly scannable, easy-to-read End-of-Day Markdown report.
+You MUST use incredibly simple, everyday language. Avoid complex business jargon or large vocabulary.
+The report must be concise and easily readable in under 5 minutes.
+Highlight specific achievements or failures, completely breakdown staff vs customer experiences, and provide a strict management action plan.
+
+Structure the response meticulously with Markdown:
+# EXECUTIVE SUMMARY
+*Write a short, punchy paragraph summarizing the entire day using simple words.*
+*Immediately after the paragraph, provide a bolded bulleted list containing EXACTLY and ONLY these two metrics:*
+*- Return Rate: ${payload.returnRate}% (${payload.returningCount} returning customers)*
+*- Best Selling Item: ${payload.bestItem}*
+*CRITICAL: Do NOT invent, hallucinate, or assume any monetary metrics like Revenue, Sales, or Profit. ONLY use the data provided.*
+
+# CUSTOMER SENTIMENT & HIGHLIGHTS
+*Identify specific feedback praising our staff or food.*
+
+# STAFF PERFORMANCE & COMPLAINTS
+*Identify any operational friction, staff grievances, and things the team needs.*
+
+# MANAGEMENT ACTION PLAN
+*Give 3-5 bulleted, highly specific actionable steps based on today's exact problems.*
+
+Do NOT use generic fillers. Be extremely specific using the exact names and feedback provided below.
+
+CUSTOMER DATA:
+${payload.customers.map((c) => `[${c.name} | ${c.stars}★ | Item: ${c.item_ordered}] Feedback: "${c.feedback_msg}". Suggestion: "${c.suggestion}"`).join('\n') || 'No feedback.'}
+
+STAFF DATA:
+${payload.staff.map((s) => `[Staff: ${s.name} | Day: ${s.day_stars}★] Complaints: "${s.complaints}". Feedback: "${s.feedback}". Suggestions: "${s.suggestions}"`).join('\n') || 'No staff reports.'}`;
+
+      const res = await fetch(`https://api.groq.com/openai/v1/chat/completions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey.trim()}` },
+        body: JSON.stringify({ model: 'llama-3.1-8b-instant', messages: [{ role: 'user', content: prompt }] }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error?.message || `API Error: ${res.status}`);
+      
+      const text = json?.choices?.[0]?.message?.content;
+      if (text) {
+        const { error } = await supabase.from('saved_daily_reports').upsert({
+          report_date: targetDate,
+          ai_content: text,
+          generated_at: new Date().toISOString()
+        });
+        if (error) throw error;
+        toast.success('Report successfully Generated & Saved!', { id: 'ai' });
+        loadHistory();
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('AI Generation Failed: ' + err.message, { id: 'ai' });
+    }
+    setLoadingModal(false);
+  };
+
+  const [customGenDate, setCustomGenDate] = useState(todayDateStr);
+  const hasSelectedDate = history.some(h => h.report_date === customGenDate);
+
   return (
-    <div className="max-w-3xl">
-      <div className="mb-8">
-        <p className="section-label mb-2">[ AI Analysis ]</p>
-        <h2 className="text-3xl font-black uppercase">Daily Report<br/>Generator</h2>
-        <div className="mt-3 h-1 w-10 bg-ink" />
-      </div>
-
-      <div className="flex gap-3 mb-8 items-end">
+    <div className="max-w-5xl">
+      <div className="mb-8 flex flex-col gap-4 items-start sm:flex-row sm:justify-between sm:items-end">
         <div>
-          <label className="form-label">Report Date</label>
-          <input type="date" className="form-input" value={date} onChange={(e) => setDate(e.target.value)} />
+          <p className="section-label mb-2">[ Artificial Intelligence ]</p>
+          <h2 className="text-3xl font-black uppercase tracking-tight">AI Report<br/>Archive</h2>
+          <div className="mt-3 h-1 w-10 bg-ink" />
         </div>
-        <button onClick={() => generate(false)} disabled={loading} className="btn-ghost py-3 px-6">
-          {loading ? '⟳ Loading...' : '→ Analyze Day'}
-        </button>
+        
+        <div className="flex flex-col gap-2 p-4 bg-paper border border-ink shadow-[4px_4px_0_0_#0a0a0a]">
+          <p className="font-mono text-[9px] uppercase tracking-widest text-gray-500 font-bold">Generate Specific Date</p>
+          <div className="flex gap-2">
+             <input type="date" value={customGenDate} max={todayDateStr} onChange={e => setCustomGenDate(e.target.value)} className="form-input text-xs flex-1 min-w-[130px]" />
+             {hasSelectedDate ? (
+               <div className="border border-green-600 bg-green-50 px-3 py-2 flex items-center justify-center">
+                 <p className="font-mono text-[10px] text-green-700 font-bold uppercase tracking-widest text-center">✓ Locked</p>
+               </div>
+             ) : (
+               <button onClick={() => generateToday(customGenDate)} disabled={loadingModal} className="btn-accent px-4 py-2 text-xs">
+                 {loadingModal ? '⟳...' : '★ Generate'}
+               </button>
+             )}
+          </div>
+        </div>
       </div>
 
-      {!import.meta.env.VITE_GEMINI_API_KEY && (
-        <div className="border border-primary p-4 bg-white mb-6">
-          <p className="font-mono text-[11px] text-primary">
-            ⚠ No VITE_GEMINI_API_KEY set — AI paragraph will be skipped. Add it to .env for full AI reports.
-          </p>
+      {!import.meta.env.VITE_GROQ_API_KEY && (
+        <div className="border border-primary text-primary px-3 py-2 bg-white mb-6 font-mono text-[9px] uppercase tracking-widest">
+          ⚠ No VITE_GROQ_API_KEY set — AI logic is disabled.
         </div>
       )}
 
-      {report && <ReportView report={report} />}
+      {loading ? <LoadingRow /> : history.length === 0 ? (
+        <div className="border border-ink bg-white p-12 text-center text-gray-500 font-mono text-xs uppercase tracking-widest">
+          No historical reports saved yet.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {history.map((h, i) => (
+            <div key={i} className="relative group flex flex-col text-left border border-ink bg-white p-5 hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#e1492c] hover:border-accent transition-all duration-200">
+              <button onClick={() => deleteAIReport(h.report_date)} className="absolute top-4 right-4 text-gray-300 hover:text-primary transition-opacity z-10" title="Delete Archive">🗑️</button>
+              
+              <button className="flex flex-col items-start gap-4 flex-1 text-left" onClick={() => fetchFullReport(h.report_date)}>
+                <div className="w-full border-b border-ink border-dashed pb-3 pr-6">
+                  <p className="font-black text-xl uppercase text-ink group-hover:text-accent transition-colors">
+                    {new Date(h.report_date + 'T12:00:00').toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                  </p>
+                  <p className="font-mono text-[9px] text-gray-400 mt-1 uppercase tracking-widest">{fmtDate(h.generated_at)}</p>
+                </div>
+                <p className="font-mono text-[11px] text-gray-600 line-clamp-3 leading-relaxed w-full">
+                  {h.ai_content.replace(/[#*]/g, '')}
+                </p>
+                <span className="font-mono text-[9px] text-accent uppercase tracking-widest mt-auto border border-accent px-2 py-1">View Full →</span>
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Popup Modal */}
+      {activeReport && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/90 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-white border-2 border-ink w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-[8px_8px_0_0_#e1492c] relative flex flex-col">
+            <button 
+              onClick={() => setActiveReport(null)} 
+              className="sticky top-0 float-right self-end m-4 bg-ink text-white hover:bg-accent font-mono text-[11px] px-4 py-2 uppercase tracking-widest z-10"
+            >
+              ✕ Close
+            </button>
+            <div className="-mt-10"> {/* offset for absolute close btn */}
+              <ReportView report={activeReport} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 function ReportView({ report }) {
-  const { date, customers, staff, custAvgStars, staffAvgStars, returningCount, bestCust, complaints, aiParagraph, aiError, generated, onForcedRegenerate } = report;
+  const { date, customers, staff, custAvgStars, staffAvgStars, returningCount, returnRate, bestItem, bestItemCount, bestCust, complaints, aiParagraph, generated_at } = report;
   return (
-    <div className="border border-ink bg-white">
+    <div className="bg-white">
       {/* Report header */}
-      <div className="border-b border-ink p-5 flex justify-between items-start bg-ink text-white">
+      <div className="border-b-2 border-ink p-8 flex justify-between items-end bg-paper">
         <div>
-          <p className="font-mono text-[10px] tracking-widest text-gray-400 uppercase">[ Daily Report ]</p>
-          <h3 className="font-black text-xl uppercase mt-1">{new Date(date + 'T12:00:00').toLocaleDateString('en-IN', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}</h3>
+          <p className="font-mono text-[10px] tracking-widest text-accent font-bold uppercase">[ OFFICIAL DAILY LOG ]</p>
+          <h3 className="font-black text-4xl uppercase mt-2 tracking-tight">
+            {new Date(date + 'T12:00:00').toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })}
+          </h3>
         </div>
-        <p className="font-mono text-[9px] text-gray-500">Generated {generated}</p>
+        <p className="font-mono text-[9px] text-gray-500 text-right uppercase tracking-widest">
+          Generated<br/>
+          {fmtDate(generated_at)}
+        </p>
       </div>
 
-      {/* Customer section */}
-      <div className="border-b border-ink p-5">
-        <p className="section-label mb-4">[ Customer Summary ]</p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-0 border border-ink">
-          <Stat label="Total Feedback" value={customers.length} small />
-          <Stat label="Avg Rating" value={`${custAvgStars.toFixed(1)} ★`} small />
-          <Stat label="Returning" value={returningCount} small accent />
-          <Stat label="Best Rating" value={bestCust ? `${bestCust.stars}★ — ${bestCust.name}` : '—'} small />
+      {/* AI Paragraph (Now placed highly aggressively at top) */}
+      <div className="p-8 border-b-2 border-ink bg-white">
+        <p className="section-label mb-6 border-l-4 border-accent pl-3">[ Executive AI Insights ]</p>
+        <div className="prose prose-sm font-mono max-w-none prose-headings:font-black prose-headings:uppercase prose-headings:tracking-widest prose-h1:text-xl prose-h2:text-lg prose-h3:text-md prose-p:text-[12px] prose-p:leading-relaxed prose-li:text-[11px] prose-strong:text-accent prose-strong:font-bold">
+          {aiParagraph ? (
+             <ReactMarkdown>{aiParagraph}</ReactMarkdown>
+          ) : (
+             <p className="text-gray-400">AI Data Missing or Errored during generation.</p>
+          )}
         </div>
-        {customers.length > 0 && (
-          <div className="mt-4">
-            <p className="form-label mb-2">All Feedback</p>
-            <div className="space-y-2 max-h-48 overflow-y-auto">
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-ink">
+        {/* Customer section */}
+        <div className="p-8 bg-gray-50">
+          <p className="section-label mb-6 text-ink">[ Raw Customer Flow ]</p>
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <Stat label="Total Feedback" value={customers.length} small />
+            <Stat label="Avg Rating" value={`${custAvgStars.toFixed(1)} ★`} small />
+            <Stat label="Returning Rate" value={`${returnRate}%`} small accent />
+            <Stat label="Best Selling" value={bestItem} small />
+          </div>
+          {customers.length > 0 && (
+            <div className="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scroll">
               {customers.map((c, i) => (
-                <div key={i} className="border border-muted p-3 flex gap-3">
-                  <div className="flex-1">
-                    <p className="font-mono text-[10px] font-bold">{c.name || 'Anonymous'} · {c.item_ordered}</p>
-                    {c.feedback_msg && <p className="font-mono text-[10px] text-gray-600 mt-0.5">"{c.feedback_msg}"</p>}
-                    {c.suggestion && <p className="font-mono text-[10px] text-primary mt-0.5">💡 {c.suggestion}</p>}
+                <div key={i} className="border border-ink bg-white p-3 shadow-[2px_2px_0_0_#0a0a0a]">
+                  <div className="flex justify-between items-start mb-2">
+                    <p className="font-black text-[11px] uppercase">{c.name || 'Anonymous'}</p>
+                    <StarRating value={c.stars} readonly />
                   </div>
-                  <div className="flex-shrink-0"><StarRating value={c.stars} readonly /></div>
+                  <p className="font-mono text-[10px] text-ink font-bold opacity-80 mb-1">{c.item_ordered}</p>
+                  {c.feedback_msg && <p className="font-mono text-[10px] text-gray-600 mb-1 leading-relaxed">"{c.feedback_msg}"</p>}
+                  {c.suggestion && <p className="font-mono text-[10px] text-accent font-bold mt-2 pt-2 border-t border-dashed border-gray-200">💡 {c.suggestion}</p>}
                 </div>
               ))}
             </div>
-          </div>
-        )}
-      </div>
-
-      {/* Staff section */}
-      <div className="border-b border-ink p-5">
-        <p className="section-label mb-4">[ Staff Summary ]</p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-0 border border-ink">
-          <Stat label="Reports" value={staff.length} small />
-          <Stat label="Avg Day ★" value={`${staffAvgStars.toFixed(1)} ★`} small />
-          <Stat label="Complaints" value={complaints.length} small />
+          )}
         </div>
-        {staff.length > 0 && (
-          <div className="mt-4 space-y-2">
-            {staff.map((s, i) => (
-              <div key={i} className="border border-muted p-3">
-                <div className="flex justify-between">
-                  <p className="font-mono text-[10px] font-bold uppercase">{s.name}</p>
-                  <StarRating value={s.day_stars} readonly />
+
+        {/* Staff section */}
+        <div className="p-8 bg-paper">
+          <p className="section-label mb-6 text-ink">[ Raw Staff Pulse ]</p>
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <Stat label="Reports" value={staff.length} small />
+            <Stat label="Avg Day ★" value={`${staffAvgStars.toFixed(1)} ★`} small />
+            <Stat label="Complaints Level" value={complaints.length} small accent />
+          </div>
+          {staff.length > 0 && (
+            <div className="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scroll">
+              {staff.map((s, i) => (
+                <div key={i} className="border border-ink bg-white p-3 shadow-[2px_2px_0_0_#e1492c]">
+                  <div className="flex justify-between items-start mb-2">
+                    <p className="font-black text-[11px] uppercase">{s.name}</p>
+                    <div className="flex bg-gray-100 px-1 py-0.5 rounded-sm"><StarRating value={s.day_stars} readonly /></div>
+                  </div>
+                  {s.feedback && <p className="font-mono text-[10px] text-gray-600 mb-1 leading-relaxed">"{s.feedback}"</p>}
+                  {s.complaints && <p className="font-mono text-[10px] text-primary font-bold mt-2 pt-2 border-t border-dashed border-gray-200">⚠ {s.complaints}</p>}
+                  {s.suggestions && <p className="font-mono text-[10px] text-accent mt-2">💡 {s.suggestions}</p>}
                 </div>
-                {s.feedback && <p className="font-mono text-[10px] text-gray-600 mt-1">"{s.feedback}"</p>}
-                {s.complaints && <p className="font-mono text-[10px] text-primary mt-1">⚠ {s.complaints}</p>}
-                {s.suggestions && <p className="font-mono text-[10px] text-accent mt-1">💡 {s.suggestions}</p>}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* AI Paragraph */}
-      <div className="p-5 relative">
-        <div className="flex justify-between items-center mb-3">
-          <p className="section-label">[ AI Analysis ]</p>
-          <button onClick={onForcedRegenerate} className="font-mono text-[9px] text-gray-400 hover:text-ink tracking-widest uppercase">
-            ⟳ Regenerate (API)
-          </button>
+              ))}
+            </div>
+          )}
         </div>
-        {aiError ? (
-           <div className="border border-primary p-4 bg-white shadow-[4px_4px_0_0_#e1492c]">
-             <p className="font-mono text-[11px] text-primary font-bold uppercase mb-2">⚠ AI Generation Failed</p>
-             <p className="font-mono text-[10px] text-primary">{aiError}</p>
-           </div>
-        ) : aiParagraph ? (
-          <div className="border-l-4 border-l-accent pl-5 space-y-2">
-            {aiParagraph.split('\n').map((line, i) => {
-              line = line.trim();
-              if (!line) return null;
-              // Bold headers
-              if (line.match(/^#+\s/)) return <h4 key={i} className="font-black text-ink uppercase text-xs mt-6 mb-2 tracking-widest">{line.replace(/#/g,'').trim()}</h4>;
-              // List items
-              if (line.match(/^[-*]\s/)) return <li key={i} className="ml-4 font-mono text-[11px] text-gray-700 leading-relaxed max-w-prose">{line.replace(/^[-*]\s*/, '').replace(/\*\*(.*?)\*\*/g, '$1')}</li>;
-              // Regular text
-              return <p key={i} className="font-mono text-[11px] text-gray-700 leading-relaxed max-w-prose">{line.replace(/\*\*(.*?)\*\*/g, '$1')}</p>;
-            })}
-          </div>
-        ) : (
-          <div className="border border-muted p-4 bg-paper">
-            <p className="font-mono text-[11px] text-gray-500 text-center">
-              Add <code className="bg-muted px-1">VITE_GEMINI_API_KEY</code> to .env to enable AI-generated insights.
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );
