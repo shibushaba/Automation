@@ -48,7 +48,7 @@ export default function AdminPanel() {
     if (!newOutlet.name.trim() || !newOutlet.manager_name.trim() || !newOutlet.manager_phone.trim()) return;
     toast.loading('Deploying...', { id: 'outlet' });
     const { error } = await supabase.from('outlets').insert([newOutlet]);
-    if (error) { toast.error('Failed or phone already used.', { id: 'outlet' }); }
+    if (error) { toast.error(`Failed: ${error.message || 'Unknown error'}`, { id: 'outlet' }); }
     else {
       toast.success('Outlet live!', { id: 'outlet' });
       setNewOutlet({ name: '', manager_name: '', manager_phone: '' });
