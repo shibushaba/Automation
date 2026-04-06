@@ -74,7 +74,7 @@ export default function Login() {
       <Toaster position="top-center" />
       <div className="w-full max-w-sm border-2 border-ink p-8 bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
         <div className="w-12 h-12 bg-primary flex items-center justify-center mb-6">
-          <span className="text-white font-black text-xl">Z</span>
+          <span className="text-white font-black text-xl">R</span>
         </div>
         <h1 className="text-3xl font-black uppercase mb-2">Team Login</h1>
         <p className="font-mono text-[10px] text-gray-500 uppercase tracking-widest mb-8">

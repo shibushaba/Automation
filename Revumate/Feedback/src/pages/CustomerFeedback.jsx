@@ -87,7 +87,7 @@ export default function CustomerFeedback() {
       <header className="border-b border-ink bg-white flex items-center justify-between px-6 py-4">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-primary flex items-center justify-center">
-            <span className="text-white font-black text-xs">Z</span>
+            <span className="text-white font-black text-xs">R</span>
           </div>
           <div>
             <p className="font-black text-xs tracking-[0.3em] uppercase">REVUMATE</p>

@@ -31,7 +31,7 @@ export default function AdminLogin() {
         {/* Logo */}
         <div className="mb-10 text-center">
           <div className="w-12 h-12 bg-ink flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-black text-lg tracking-widest">Z</span>
+            <span className="text-white font-black text-lg tracking-widest">R</span>
           </div>
           <p className="section-label mb-1">[ Admin Access ]</p>
           <h1 className="text-3xl font-black uppercase">REVUMATE<br/>ADMIN</h1>

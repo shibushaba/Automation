@@ -7,7 +7,7 @@ export default function Home() {
       <header className="border-b border-ink bg-white flex items-center justify-between px-8 py-4">
         <div className="flex items-center gap-4">
           <div className="w-9 h-9 bg-ink flex items-center justify-center">
-            <span className="text-white font-black text-sm tracking-widest">Z</span>
+            <span className="text-white font-black text-sm tracking-widest">R</span>
           </div>
           <div>
             <p className="font-black text-sm tracking-[0.3em] uppercase text-ink">REVUMATE</p>
