@@ -4,6 +4,8 @@ import { loginAdmin } from '../components/AdminGuard';
 
 const ADMIN_USER = 'Zeechai';
 const ADMIN_PASS = 'zee@chai';
+const ADMIN_USER_2 = 'revumate';
+const ADMIN_PASS_2 = 'revu@mate';
 
 export default function AdminLogin() {
   const [creds, setCreds]   = useState({ username: '', password: '' });
@@ -15,7 +17,10 @@ export default function AdminLogin() {
     e.preventDefault();
     setLoading(true);
     setTimeout(() => {
-      if (creds.username === ADMIN_USER && creds.password === ADMIN_PASS) {
+      const isLegacyAdmin = creds.username === ADMIN_USER && creds.password === ADMIN_PASS;
+      const isNewAdmin = creds.username === ADMIN_USER_2 && creds.password === ADMIN_PASS_2;
+      
+      if (isLegacyAdmin || isNewAdmin) {
         loginAdmin();
         navigate('/admin');
       } else {
