@@ -11,7 +11,7 @@ export default function Home() {
           </div>
           <div>
             <p className="font-black text-sm tracking-[0.3em] uppercase text-ink">REVUMATE</p>
-            <p className="font-mono text-[9px] tracking-widest text-gray-400 uppercase">Cafe · Est. 2024</p>
+            <p className="font-mono text-[9px] tracking-widest text-gray-400 uppercase">AI Feedback Platform</p>
           </div>
         </div>
         <p className="font-mono text-[10px] tracking-widest text-gray-400 uppercase hidden sm:block">

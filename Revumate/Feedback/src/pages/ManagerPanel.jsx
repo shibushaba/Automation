@@ -191,7 +191,7 @@ export default function ManagerPanel() {
       const staffSummaries = staff?.filter(s => !s.is_manager_report).map(s => `${s.name} (${s.day_stars}/5): ${s.feedback}${s.complaints && s.complaints !== 'None' ? ' | Issue: ' + s.complaints : ''}`).join('\n') || 'No staff reports';
       const managerReport = staff?.find(s => s.is_manager_report);
 
-      const prompt = `You are the Outlet Manager at REVUMATE cafe. Write a detailed, sharp executive summary of today's operations.
+      const prompt = `You are the Manager at REVUMATE. Write a detailed, sharp executive summary of today's operations.
 
 CUSTOMER DATA:
 - Total Customers: ${customers?.length || 0}
