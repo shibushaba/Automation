@@ -5,7 +5,9 @@ import ReactMarkdown from 'react-markdown';
 import toast, { Toaster } from 'react-hot-toast';
 
 export default function SharedReport() {
-  const { type, outletId, date, id } = useParams();
+  const { outletId, date, id } = useParams();
+  const type = id ? 'master' : 'daily';
+  
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [outletName, setOutletName] = useState('HQ');
